@@ -1,11 +1,12 @@
 import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { hasAwsCredentials } from "./backends/aws.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "../..");
 
-export type JudgeProvider = "heuristic" | "openai" | "gemini" | "anthropic" | "openrouter";
+export type JudgeProvider = "heuristic" | "openai" | "gemini" | "anthropic" | "openrouter" | "bedrock";
 
 export interface JudgeConfig {
   provider: JudgeProvider;
@@ -23,13 +24,20 @@ export interface ZeroConfig {
   editQuery: string;
 }
 
+export interface AwsAppConfig {
+  region: string;
+  /** Optional bucket for hosting intermediate images (presigned GETs). */
+  s3Bucket: string;
+}
+
 export interface AppConfig {
   judge: JudgeConfig;
   loop: { bar: number; maxRounds: number };
   zero: ZeroConfig;
+  aws: AwsAppConfig;
 }
 
-const PROVIDER_DEFAULTS: Record<Exclude<JudgeProvider, "heuristic">, { model: string; keyEnv: string; baseUrl: string }> = {
+const PROVIDER_DEFAULTS: Record<Exclude<JudgeProvider, "heuristic" | "bedrock">, { model: string; keyEnv: string; baseUrl: string }> = {
   openai: {
     model: "gpt-4o-mini",
     keyEnv: "OPENAI_API_KEY",
@@ -84,11 +92,28 @@ export function loadAppConfig(): AppConfig {
   const loopRaw = (raw.loop ?? {}) as Record<string, number>;
   const zeroRaw = (raw.zero ?? {}) as Record<string, unknown>;
 
+  const awsRaw = (raw.aws ?? {}) as Record<string, string>;
+  const aws: AwsAppConfig = {
+    region: process.env.AWS_REGION ?? awsRaw.region ?? "us-east-1",
+    s3Bucket: process.env.TOPSHOT_S3_BUCKET ?? awsRaw.s3Bucket ?? "",
+  };
+
   const provider = (process.env.JUDGE_PROVIDER ?? judgeRaw.provider ?? "heuristic") as JudgeProvider;
   let judge: JudgeConfig = { provider: "heuristic", model: "pixel-stats", baseUrl: "" };
 
-  if (provider !== "heuristic") {
-    const defaults = PROVIDER_DEFAULTS[provider];
+  if (provider === "bedrock") {
+    // Bedrock signs with AWS credentials (default chain), not an API key.
+    if (hasAwsCredentials()) {
+      judge = {
+        provider,
+        model: process.env.JUDGE_MODEL || judgeRaw.model || "amazon.nova-lite-v1:0",
+        baseUrl: aws.region,
+      };
+    } else {
+      judge.note = "bedrock selected but no AWS credentials found (env or ~/.aws) — using heuristic";
+    }
+  } else if (provider !== "heuristic") {
+    const defaults = PROVIDER_DEFAULTS[provider as Exclude<JudgeProvider, "heuristic" | "bedrock">];
     if (!defaults) {
       judge.note = `unknown judge provider "${provider}" — using heuristic`;
     } else {
@@ -120,5 +145,6 @@ export function loadAppConfig(): AppConfig {
       flourishQuery: String(zeroRaw.flourishQuery ?? "image upscale enhance super-resolution photo"),
       editQuery: String(zeroRaw.editQuery ?? "photo image editing crop resize exposure"),
     },
+    aws,
   };
 }

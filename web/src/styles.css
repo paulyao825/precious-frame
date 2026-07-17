@@ -736,6 +736,30 @@ h3 {
   font-size: 13.5px;
 }
 
+/* ── infra panel ────────────────────────────────────── */
+.infra-row {
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+
+.infra-row:first-of-type {
+  border-top: 0;
+}
+
+.infra-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.infra-note {
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
 /* ── zero.xyz panel ─────────────────────────────────── */
 .loop-tag.zero {
   color: #5b4a82;

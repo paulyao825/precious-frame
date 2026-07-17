@@ -17,7 +17,7 @@ export const JUDGE_HINTS = [
   "sharpen", "soften",
 ] as const;
 
-const SYSTEM = `You are a photo-edit judge inside an automated critique-and-refine loop.
+export const JUDGE_SYSTEM_PROMPT = `You are a photo-edit judge inside an automated critique-and-refine loop.
 Score the image 0-10 on EXACTLY these axes (concrete flaws only, never vague "beauty"):
 - cropFraming: subject centered and filling the frame? (tighten also means zoom in)
 - exposure: midtone placement, crushed shadows, blown highlights
@@ -65,7 +65,7 @@ export class LlmVisionJudge implements VisionJudge {
         max_tokens: 700,
         temperature: 0,
         messages: [
-          { role: "system", content: SYSTEM },
+          { role: "system", content: JUDGE_SYSTEM_PROMPT },
           {
             role: "user",
             content: [
@@ -92,7 +92,7 @@ export class LlmVisionJudge implements VisionJudge {
       body: JSON.stringify({
         model: this.cfg.model,
         max_tokens: 700,
-        system: SYSTEM,
+        system: JUDGE_SYSTEM_PROMPT,
         messages: [
           {
             role: "user",
@@ -110,7 +110,7 @@ export class LlmVisionJudge implements VisionJudge {
   }
 }
 
-function parseCritique(text: string): Critique {
+export function parseCritique(text: string): Critique {
   const start = text.indexOf("{");
   const end = text.lastIndexOf("}");
   if (start < 0 || end <= start) throw new Error(`judge returned no JSON: ${text.slice(0, 200)}`);

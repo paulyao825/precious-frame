@@ -32,10 +32,14 @@ run picks it up.
 ```jsonc
 {
   "judge": {
-    "provider": "heuristic",   // heuristic | openai | gemini | anthropic | openrouter
-    "model": "",               // empty = provider default (gpt-4o-mini, gemini-2.5-flash, ...)
+    "provider": "heuristic",   // heuristic | openai | gemini | anthropic | openrouter | bedrock
+    "model": "",               // empty = provider default (gpt-4o-mini, amazon.nova-lite-v1:0, ...)
     "apiKeyEnv": "",           // empty = provider default (OPENAI_API_KEY, GEMINI_API_KEY, ...)
     "baseUrl": ""              // override for proxies / compatible endpoints
+  },
+  "aws": {
+    "region": "us-east-1",     // Bedrock + S3 region
+    "s3Bucket": ""             // optional: host intermediate images via presigned URLs
   },
   "loop": { "bar": 7.5, "maxRounds": 8 },
   "zero": {
@@ -53,6 +57,35 @@ judge and tells you why (banner in the UI, `judge:fallback` event).
 OpenAI, Gemini, and OpenRouter share one OpenAI-compatible client;
 Anthropic uses its native API — all four emit the same axes and hint
 vocabulary, so the loop is identical under every judge.
+
+## AWS — Bedrock judge + S3 hosting
+
+Two real AWS touchpoints, both through the SDK default credential chain
+(env vars, `~/.aws`, SSO, roles — see `.env.example`):
+
+- **Bedrock vision judge** — set `judge.provider` to `"bedrock"` and the
+  critique runs on AWS Bedrock via the model-agnostic Converse API
+  (default model `amazon.nova-lite-v1:0`; any vision model you have
+  access to works, e.g. Claude on Bedrock). Same prompt, axes, and hint
+  vocabulary as every other judge; missing credentials degrade to the
+  pixel heuristic with a visible note.
+- **S3 image hosting** — set `aws.s3Bucket` and intermediate images sent
+  to remote editors (the Zero.xyz flourish) are uploaded to your bucket
+  and served via 1-hour presigned GETs instead of free ephemeral hosts.
+
+## Akash — decentralized compute
+
+The loops are latency-critical (reward must return in seconds), so the
+right unit of Akash compute is the **whole agent**, not per-task jobs:
+
+- `Dockerfile` + `deploy/akash.sdl.yaml` deploy the full app (API + UI in
+  one container) to the Akash marketplace — build, push, paste the SDL
+  into [console.akash.network](https://console.akash.network).
+- The server detects an Akash provider at runtime (via the `AKASH_*` env
+  vars providers inject) and the UI infrastructure panel switches from
+  `local` to `akash` with the deployment hostname.
+- Every loop task is timed through the `ComputeRunner` layer
+  (`compute:task` events), so the panel shows exactly where compute went.
 
 ## Zero.xyz — real integration
 
@@ -134,10 +167,11 @@ knows which is active.
 |---|---|---|
 | Frame extraction | `FrameExtractor` | **real** — bundled ffmpeg-static |
 | Fast frame scorer | `FrameScorer` | **real** — laplacian sharpness / exposure / edge-energy interest |
-| Vision judge | `VisionJudge` | **real** — pixel heuristics or OpenAI / Gemini / Claude / OpenRouter via config |
+| Vision judge | `VisionJudge` | **real** — pixel heuristics or OpenAI / Gemini / Claude / OpenRouter / AWS Bedrock via config |
 | Editor `local` | `Editor` | **real** — sharp |
 | Editor `zero` | `Editor` | **real discovery** via @zeroxyz/cli; paid invocation gated on wallet + budget |
-| Compute | `ComputeRunner` | Akash slot — mock (runs inline) |
+| Compute | `ComputeRunner` | **real** — Akash-aware (env detection + task timing); full-app SDL in `deploy/` |
+| Image hosting | `S3Publisher` | **real** — AWS S3 presigned URLs when a bucket is configured |
 | Data layer | `DataStore` | Nexla slot — mock (in-memory) |
 
 ## UI (demo flow)

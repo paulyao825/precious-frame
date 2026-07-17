@@ -1,19 +1,7 @@
 /**
  * Interfaces for the remaining sponsor tools (build-order step 6).
- * All mocked now; swap real impls in one at a time — if any fights us,
- * its mock stays.
+ * Akash lives in compute.ts, AWS in aws.ts; Nexla stays mocked.
  */
-
-/** Akash — run compute workloads (e.g. batch frame scoring). */
-export interface ComputeRunner {
-  run<T>(taskName: string, fn: () => Promise<T>): Promise<T>;
-}
-
-export class MockComputeRunner implements ComputeRunner {
-  async run<T>(_taskName: string, fn: () => Promise<T>): Promise<T> {
-    return fn(); // runs inline locally
-  }
-}
 
 /** Nexla — data layer for frames / params / scores. */
 export interface DataStore {

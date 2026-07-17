@@ -11,8 +11,10 @@ import type { Editor } from "../backends/editor.js";
 import { ResilientJudge, type VisionJudge } from "../backends/judge.js";
 import { HeuristicVisionJudge } from "../backends/judge.heuristic.js";
 import { LlmVisionJudge } from "../backends/judge.llm.js";
+import { BedrockVisionJudge } from "../backends/judge.bedrock.js";
 import { ZeroClient, type ZeroDiscovery } from "../backends/zero.js";
-import { MockComputeRunner } from "../backends/stubs.js";
+import { InstrumentedComputeRunner } from "../backends/compute.js";
+import { S3Publisher } from "../backends/aws.js";
 import { makeFrameSelectionLoop, initialSelectionState } from "../loops/frameSelection.js";
 import { makeEditRefinementLoop, initialRefineState } from "../loops/editRefinement.js";
 import type { EditedImage, Frame } from "../domain/types.js";
@@ -72,16 +74,17 @@ export class RunManager {
 
   private async execute(runId: string, req: RunRequest, emit: (e: RunEvent) => void): Promise<void> {
     const runDir = path.join(this.dataDir, "runs", runId);
-    const compute = new MockComputeRunner(); // Akash slot — runs inline for now
+    const compute = new InstrumentedComputeRunner((task) => emit({ type: "compute:task", ...task })); // Akash-aware
     const cfg: AppConfig = loadAppConfig(); // re-read per run: config edits apply live
 
     const judge = this.buildJudge(cfg, emit);
     const zero = new ZeroClient(cfg.zero);
+    const s3 = cfg.aws.s3Bucket ? new S3Publisher(cfg.aws) : undefined;
 
     const editsDir = path.join(runDir, "edits");
     const editor: Editor =
       req.editorBackend === "zero"
-        ? new ZeroEditor(editsDir, this.urlFor, zero)
+        ? new ZeroEditor(editsDir, this.urlFor, zero, s3)
         : new SharpLocalEditor(editsDir, this.urlFor);
 
     emit({
@@ -93,6 +96,14 @@ export class RunManager {
       judge: cfg.judge.provider === "heuristic" ? "heuristic-pixels" : `${cfg.judge.provider}:${cfg.judge.model}`,
       judgeNote: cfg.judge.note,
       bar: cfg.loop.bar,
+      compute: compute.env.host,
+      computeNote: compute.env.detail,
+      awsNote:
+        cfg.judge.provider === "bedrock"
+          ? `Bedrock judge in ${cfg.aws.region}${cfg.aws.s3Bucket ? ` + S3 image hosting (${cfg.aws.s3Bucket})` : ""}`
+          : cfg.aws.s3Bucket
+            ? `S3 image hosting (${cfg.aws.s3Bucket}, ${cfg.aws.region})`
+            : undefined,
     });
 
     // ── Zero.xyz discovery (live catalog search, concurrent with extract)
@@ -178,7 +189,7 @@ export class RunManager {
     if (req.flourish && results.length > 0) {
       emit({ type: "flourish:start", frameId: winner.frame.id });
       const discovery = await flourishDiscovery;
-      const zeroEditor = editor instanceof ZeroEditor ? editor : new ZeroEditor(editsDir, this.urlFor, zero);
+      const zeroEditor = editor instanceof ZeroEditor ? editor : new ZeroEditor(editsDir, this.urlFor, zero, s3);
       const enhanced = await zeroEditor.finalFlourish(winner.image, this.resolvePath(winner.image.uri), discovery);
       flourishUrl = enhanced.image.uri;
       emit({
@@ -206,8 +217,11 @@ export class RunManager {
   private buildJudge(cfg: AppConfig, emit: (e: RunEvent) => void): VisionJudge {
     const heuristic = new HeuristicVisionJudge(this.resolvePath);
     if (cfg.judge.provider === "heuristic") return heuristic;
-    const llm = new LlmVisionJudge(this.resolvePath, cfg.judge);
-    return new ResilientJudge(llm, heuristic, (err) =>
+    const primary: VisionJudge =
+      cfg.judge.provider === "bedrock"
+        ? new BedrockVisionJudge(this.resolvePath, cfg.aws.region, cfg.judge.model)
+        : new LlmVisionJudge(this.resolvePath, cfg.judge);
+    return new ResilientJudge(primary, heuristic, (err) =>
       emit({
         type: "judge:fallback",
         message: `${cfg.judge.provider} judge failed (${String(err).slice(0, 180)}) — continuing with pixel heuristics`,

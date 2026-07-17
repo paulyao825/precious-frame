@@ -18,6 +18,9 @@
     "typescript": "^7.0.2"
   },
   "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.1090.0",
+    "@aws-sdk/client-s3": "^3.1090.0",
+    "@aws-sdk/s3-request-presigner": "^3.1090.0",
     "@zeroxyz/cli": "^1.26.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",

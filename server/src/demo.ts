@@ -14,7 +14,8 @@ import { MockFrameExtractor } from "./backends/extractor.js";
 import { MockFrameScorer } from "./backends/frameScorer.js";
 import { createEditor, MockZeroEditor } from "./backends/editor.js";
 import { MockVisionJudge } from "./backends/judge.js";
-import { MockComputeRunner, MockDataStore } from "./backends/stubs.js";
+import { MockDataStore } from "./backends/stubs.js";
+import { InstrumentedComputeRunner } from "./backends/compute.js";
 import { makeFrameSelectionLoop, initialSelectionState } from "./loops/frameSelection.js";
 import { makeEditRefinementLoop, initialRefineState } from "./loops/editRefinement.js";
 import type { EditedImage, Frame } from "./domain/types.js";
@@ -48,7 +49,7 @@ async function main(): Promise<void> {
   const scorer = new MockFrameScorer(world);
   const editor = createEditor(config.editorBackend);
   const judge = new MockVisionJudge(world);
-  const compute = new MockComputeRunner(); // Akash slot
+  const compute = new InstrumentedComputeRunner(); // Akash-aware compute layer
   const store = new MockDataStore(); //       Nexla slot
 
   console.log("═".repeat(72));

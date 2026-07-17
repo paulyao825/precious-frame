@@ -5,7 +5,7 @@ import { UploadPanel, type RunOptions } from "./components/UploadPanel";
 import { Loop1Panel } from "./components/Loop1Panel";
 import { Loop2Card } from "./components/Loop2Card";
 import { FinalGallery } from "./components/FinalGallery";
-import { ZeroPanel } from "./components/ZeroPanel";
+import { InfraPanel } from "./components/InfraPanel";
 import { Spinner } from "./components/bits";
 
 function runReducer(state: RunState, action: RunEvent | { type: "reset" } | { type: "uploading" }): RunState {
@@ -61,6 +61,7 @@ export default function App() {
                 editor: {state.config.editorBackend}
               </span>
               <span className="judge-chip">judge: {state.config.judge}</span>
+              <span className="judge-chip">compute: {state.config.compute}</span>
             </>
           )}
           {busy && <Spinner label={PHASE_LABEL[state.phase] ?? state.phase} />}
@@ -98,7 +99,7 @@ export default function App() {
         </main>
       ) : (
         <main className="pipeline">
-          <ZeroPanel discoveries={state.zeroDiscoveries} />
+          <InfraPanel state={state} />
           {state.frames.length > 0 && (
             <Loop1Panel
               frames={state.frames}

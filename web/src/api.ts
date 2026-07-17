@@ -1,16 +1,42 @@
 import type { RunEvent } from "./types";
 
+/**
+ * API base URL. Same-origin by default (dev proxy / single-process deploy).
+ * For a static deploy (e.g. Vercel) point it at the backend with the
+ * VITE_API_BASE build env or at runtime with ?api=https://backend.example.
+ */
+const API_BASE = (
+  new URLSearchParams(window.location.search).get("api") ??
+  (import.meta.env.VITE_API_BASE as string | undefined) ??
+  ""
+).replace(/\/+$/, "");
+
+const api = (p: string) => `${API_BASE}${p}`;
+
+/** Media URLs in events are server-relative ("/media/..") — make them absolute. */
+function absolutizeMedia<T>(value: T): T {
+  if (!API_BASE) return value;
+  if (typeof value === "string") {
+    return (value.startsWith("/media/") ? `${API_BASE}${value}` : value) as T;
+  }
+  if (Array.isArray(value)) return value.map(absolutizeMedia) as T;
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, absolutizeMedia(v)])) as T;
+  }
+  return value;
+}
+
 export async function uploadVideo(file: File): Promise<string> {
   const form = new FormData();
   form.append("video", file);
-  const res = await fetch("/api/upload", { method: "POST", body: form });
+  const res = await fetch(api("/api/upload"), { method: "POST", body: form });
   if (!res.ok) throw new Error(`upload failed: ${await res.text()}`);
   const { videoId } = (await res.json()) as { videoId: string };
   return videoId;
 }
 
 export async function requestSampleVideo(): Promise<string> {
-  const res = await fetch("/api/sample", { method: "POST" });
+  const res = await fetch(api("/api/sample"), { method: "POST" });
   if (!res.ok) throw new Error(`sample generation failed: ${await res.text()}`);
   const { videoId } = (await res.json()) as { videoId: string };
   return videoId;
@@ -22,7 +48,7 @@ export async function startRun(opts: {
   editorBackend: "local" | "zero";
   flourish: boolean;
 }): Promise<string> {
-  const res = await fetch("/api/run", {
+  const res = await fetch(api("/api/run"), {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(opts),
@@ -33,9 +59,9 @@ export async function startRun(opts: {
 }
 
 export function subscribeToRun(runId: string, onEvent: (e: RunEvent) => void): () => void {
-  const source = new EventSource(`/api/runs/${runId}/events`);
+  const source = new EventSource(api(`/api/runs/${runId}/events`));
   source.onmessage = (msg) => {
-    const event = JSON.parse(msg.data) as RunEvent;
+    const event = absolutizeMedia(JSON.parse(msg.data) as RunEvent);
     onEvent(event);
     if (event.type === "run:done" || event.type === "run:error") source.close();
   };

@@ -73,7 +73,11 @@ export type RunEvent =
       judge: string;
       judgeNote?: string;
       bar: number;
+      compute: "akash" | "local";
+      computeNote: string;
+      awsNote?: string;
     }
+  | { type: "compute:task"; name: string; ms: number }
   | { type: "extract:start" }
   | { type: "extract:done"; frames: FrameInfo[] }
   | ({ type: "zero:discovery" } & ZeroDiscoveryInfo)
@@ -118,9 +122,13 @@ export interface RunState {
     judge: string;
     judgeNote?: string;
     bar: number;
+    compute: "akash" | "local";
+    computeNote: string;
+    awsNote?: string;
   };
   judgeFallback?: string;
   zeroDiscoveries: ZeroDiscoveryInfo[];
+  computeTasks: Array<{ name: string; ms: number }>;
   frames: FrameInfo[];
   loop1Rounds: Loop1Round[];
   loop1Done?: { selectedIds: string[]; converged: boolean; bestScore: number };
@@ -133,6 +141,7 @@ export interface RunState {
 export const initialRunState: RunState = {
   phase: "idle",
   zeroDiscoveries: [],
+  computeTasks: [],
   frames: [],
   loop1Rounds: [],
   loop2: {},
@@ -153,8 +162,13 @@ export function reduceEvent(state: RunState, e: RunEvent): RunState {
           judge: e.judge,
           judgeNote: e.judgeNote,
           bar: e.bar,
+          compute: e.compute,
+          computeNote: e.computeNote,
+          awsNote: e.awsNote,
         },
       };
+    case "compute:task":
+      return { ...state, computeTasks: [...state.computeTasks, { name: e.name, ms: e.ms }] };
     case "extract:start":
       return { ...state, phase: "extracting" };
     case "zero:discovery":

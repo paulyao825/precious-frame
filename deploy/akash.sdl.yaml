@@ -1,0 +1,52 @@
+# Akash SDL — deploys Topshot (API + UI in one container) to the Akash
+# decentralized compute marketplace.
+#
+# Usage (Akash CLI or https://console.akash.network):
+#   1. Build & push the image:  docker build -t <you>/topshot:latest . && docker push <you>/topshot:latest
+#   2. Set the image below, then create the deployment from this SDL.
+#   3. Put provider secrets (OPENAI_API_KEY / AWS keys) in the env section
+#      or use Akash console's secret handling.
+#
+# The server detects it is running on Akash via the AKASH_* env vars the
+# provider injects, and reports it in the UI infra panel.
+---
+version: "2.0"
+
+services:
+  topshot:
+    image: REPLACE_ME/topshot:latest
+    expose:
+      - port: 4000
+        as: 80
+        to:
+          - global: true
+    env:
+      - NODE_ENV=production
+      # - OPENAI_API_KEY=...     # or bake a bedrock judge with AWS keys:
+      # - JUDGE_PROVIDER=bedrock
+      # - AWS_ACCESS_KEY_ID=...
+      # - AWS_SECRET_ACCESS_KEY=...
+      # - AWS_REGION=us-east-1
+
+profiles:
+  compute:
+    topshot:
+      resources:
+        cpu:
+          units: 2
+        memory:
+          size: 2Gi
+        storage:
+          size: 4Gi
+  placement:
+    dcloud:
+      pricing:
+        topshot:
+          denom: uakt
+          amount: 10000
+
+deployment:
+  topshot:
+    dcloud:
+      profile: topshot
+      count: 1

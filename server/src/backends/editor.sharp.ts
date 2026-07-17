@@ -4,6 +4,7 @@ import sharp from "sharp";
 import type { Editor } from "./editor.js";
 import { recipeSlug } from "./editor.js";
 import type { ZeroClient, ZeroDiscovery } from "./zero.js";
+import type { S3Publisher } from "./aws.js";
 import type { EditedImage, Frame, Recipe } from "../domain/types.js";
 
 const OUTPUT_WIDTH = 640;
@@ -79,6 +80,7 @@ export class ZeroEditor implements Editor {
     private readonly outDir: string,
     private readonly urlFor: (absPath: string) => string,
     private readonly zero?: ZeroClient,
+    private readonly s3?: S3Publisher,
     private readonly simulatedLatencyMs = 350,
   ) {}
 
@@ -108,9 +110,16 @@ export class ZeroEditor implements Editor {
       // short-lived host first; localhost is unreachable for them.
       const candidates = [discovery.capability, ...discovery.alternates];
       const failures: string[] = [];
+      let hostedVia = "ephemeral host";
       try {
         const jpeg = await readFile(editedPath);
-        const publicUrl = await publishTemp(jpeg);
+        let publicUrl: string;
+        if (this.s3) {
+          publicUrl = await this.s3.publish(jpeg, `topshot/${image.frameId}-${Date.now()}.jpg`);
+          hostedVia = "AWS S3 presigned URL";
+        } else {
+          publicUrl = await publishTemp(jpeg);
+        }
         for (const cap of candidates) {
           try {
             const out = await this.zero.invoke(cap, { image_url: publicUrl, scale: 2 });
@@ -121,7 +130,7 @@ export class ZeroEditor implements Editor {
               image: { ...image, uri: this.urlFor(outPath), backend: "zero" },
               via: `zero:${cap.slug}`,
               note:
-                `remote enhancement via Zero.xyz — ${cap.name} (${cap.pricing})` +
+                `remote enhancement via Zero.xyz — ${cap.name} (${cap.pricing}), source hosted on ${hostedVia}` +
                 (failures.length ? `; self-corrected after ${failures.length} failed capability(ies)` : ""),
             };
           } catch (err) {

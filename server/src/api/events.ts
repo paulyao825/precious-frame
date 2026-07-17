@@ -36,7 +36,13 @@ export type RunEvent =
       judge: string;
       judgeNote?: string;
       bar: number;
+      /** Akash detection: "akash" when running on a provider, else "local". */
+      compute: "akash" | "local";
+      computeNote: string;
+      /** Present when AWS (Bedrock judge and/or S3 hosting) is active. */
+      awsNote?: string;
     }
+  | { type: "compute:task"; name: string; ms: number }
   | { type: "extract:start" }
   | { type: "extract:done"; frames: FrameInfo[] }
   | {
