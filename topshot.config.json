@@ -1,0 +1,22 @@
+{
+  "$comment": "Topshot runtime config \u2014 reloaded on every run, no restart needed.",
+  "judge": {
+    "$comment": "provider: heuristic | openai | gemini | anthropic | openrouter. apiKeyEnv defaults per provider (OPENAI_API_KEY, GEMINI_API_KEY, ANTHROPIC_API_KEY, OPENROUTER_API_KEY) \u2014 put keys in .env. Missing key falls back to heuristic.",
+    "provider": "openai",
+    "model": "",
+    "apiKeyEnv": "",
+    "baseUrl": ""
+  },
+  "loop": {
+    "$comment": "bar: overall score (0.6*mean + 0.4*worst axis) needed to stop early.",
+    "bar": 7.5,
+    "maxRounds": 8
+  },
+  "zero": {
+    "$comment": "Zero.xyz \u2014 capability discovery is free and always on. Paid invocation needs `zero auth login` + funded wallet; set maxPayUsdc > 0 to allow spending.",
+    "enabled": true,
+    "maxPayUsdc": 0.15,
+    "flourishQuery": "image upscale enhance super-resolution photo",
+    "editQuery": "photo image editing crop resize exposure"
+  }
+}

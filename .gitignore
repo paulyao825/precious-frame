@@ -1,0 +1,24 @@
+# Node
+node_modules/
+dist/
+
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Topshot runtime artifacts (frames, edits, run logs)
+**/data/runs/
+**/data/uploads/
+*.log
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
