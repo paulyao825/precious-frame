@@ -1,7 +1,7 @@
 /**
  * Compute layer — Akash integration.
  *
- * Loopic's loops are latency-critical (the reward must return in seconds),
+ * Precious Frame's loops are latency-critical (the reward must return in seconds),
  * so the right way to use decentralized compute is to run the WHOLE agent as
  * an Akash deployment (see deploy/akash.sdl.yaml + Dockerfile), not to ship
  * individual tasks over the wire mid-loop.

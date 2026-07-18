@@ -10,8 +10,8 @@ import { RunManager } from "./api/orchestrator.js";
 import { generateSampleVideo } from "./media/ffmpeg.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DEFAULT_DATA_DIR = process.env.VERCEL ? "/tmp/loopic-data" : path.resolve(__dirname, "../data");
-const DATA_DIR = path.resolve(process.env.LOOPIC_DATA_DIR ?? DEFAULT_DATA_DIR);
+const DEFAULT_DATA_DIR = process.env.VERCEL ? "/tmp/precious-frame-data" : path.resolve(__dirname, "../data");
+const DATA_DIR = path.resolve(process.env.PRECIOUS_FRAME_DATA_DIR ?? DEFAULT_DATA_DIR);
 const WEB_DIST = path.resolve(__dirname, "../../web/dist");
 const PORT = Number(process.env.PORT ?? 4000);
 
@@ -94,7 +94,7 @@ if (existsSync(WEB_DIST)) {
 
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
-    console.log(`loopic server listening on http://localhost:${PORT}`);
+    console.log(`precious-frame server listening on http://localhost:${PORT}`);
   });
 }
 

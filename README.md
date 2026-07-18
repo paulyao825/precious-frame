@@ -1,10 +1,10 @@
-# Loopic - AI visual storytelling assistant
+# Precious Frame - AI visual storytelling assistant
 
-Loopic finds the best photos hidden inside videos. Upload a video, and the
+Precious Frame finds the best photos hidden inside videos. Upload a video, and the
 agent extracts candidate frames, selects the strongest and most varied moments,
 then improves each one through a critique-and-refine loop.
 
-**Don't miss any frames.** Loopic does not create fake AI pictures. It uses AI to
+**Don't miss any frames.** Precious Frame does not create fake AI pictures. It uses AI to
 attract real-world clip photos: the actual moments already inside your videos.
 
 The current prototype focuses on discovering and improving strong photo moments:
@@ -38,7 +38,7 @@ Extra:
 
 - `npm run demo` - all-mock console demo
 
-## Configuration - `loopic.config.json`
+## Configuration - `precious-frame.config.json`
 
 The config file is reloaded on every run, so edits apply without restarting the
 server.
@@ -78,7 +78,7 @@ pixel-heuristic judge, and the UI shows the fallback reason.
 
 ## AWS
 
-Loopic includes two AWS integration points:
+Precious Frame includes two AWS integration points:
 
 - **Bedrock vision judge** - set `judge.provider` to `"bedrock"` and the edit
   critique runs through AWS Bedrock using the SDK default credential chain.
@@ -90,16 +90,16 @@ shows the fallback note in the UI.
 
 ## Zero.xyz
 
-Loopic uses `@zeroxyz/cli` for live capability discovery. Discovery is free and
+Precious Frame uses `@zeroxyz/cli` for live capability discovery. Discovery is free and
 visible in the infrastructure panel.
 
 Paid invocation is gated:
 
 1. Run `npx zero auth login`.
 2. Fund the wallet with USDC on Base.
-3. Set `zero.maxPayUsdc` in `loopic.config.json`.
+3. Set `zero.maxPayUsdc` in `precious-frame.config.json`.
 
-Without a wallet or budget, Loopic still works. The final flourish falls back to
+Without a wallet or budget, Precious Frame still works. The final flourish falls back to
 a local enhancement pass and reports that clearly.
 
 ## Akash
@@ -109,12 +109,12 @@ The repo includes:
 - `Dockerfile` - single container serving API + built web UI
 - `deploy/akash.sdl.yaml` - Akash deployment template
 
-Loopic detects Akash provider environment variables at runtime and reports the
+Precious Frame detects Akash provider environment variables at runtime and reports the
 compute host in the UI infrastructure panel.
 
 ## How It Works
 
-Loopic uses one reusable loop abstraction:
+Precious Frame uses one reusable loop abstraction:
 
 ```txt
 act -> observe -> score -> correct -> repeat
@@ -131,10 +131,10 @@ The edit loop changes one parameter at a time: crop, exposure, contrast,
 saturation, temperature, or sharpening. A judge scores concrete visual axes and
 returns directional hints such as `brighten`, `tighten`, or `warmer`.
 
-## What's Next for Loopic
+## What's Next for Precious Frame
 
 While the current prototype focuses on discovering and improving the best
-moments hidden inside videos, Loopic can become a complete AI visual storytelling
+moments hidden inside videos, Precious Frame can become a complete AI visual storytelling
 assistant.
 
 Future directions:
@@ -152,10 +152,10 @@ Future directions:
    editing suggestions, consistent style matching, client-specific preferences,
    and faster post-production workflows.
 5. **Photo intelligence SDK** - let camera apps, social platforms, creator tools,
-   sports/event platforms, memory apps, and travel apps integrate Loopic as an AI
+   sports/event platforms, memory apps, and travel apps integrate Precious Frame as an AI
    layer for understanding which moments matter.
 
-Today, Loopic finds the best photos hidden inside videos. Tomorrow, Loopic
+Today, Precious Frame finds the best photos hidden inside videos. Tomorrow, Precious Frame
 becomes the AI that understands every visual moment worth remembering.
 
 ## Repo Layout

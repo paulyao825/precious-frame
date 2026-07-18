@@ -22,7 +22,7 @@ const PHASE_LABEL: Record<string, string> = {
   flourish: "zero.xyz pro pass",
 };
 
-const GITHUB_URL = "https://github.com/paulyao825/Loopic-AWS-Hackathon";
+const GITHUB_URL = "https://github.com/paulyao825/precious-frame";
 
 const FUTURE_DIRECTIONS = [
   {
@@ -48,7 +48,7 @@ const FUTURE_DIRECTIONS = [
   {
     number: "05",
     title: "Photo intelligence everywhere",
-    copy: "Bring Loopic to camera apps, social platforms, creator tools, sports, events, memories, and travel products as an SDK.",
+    copy: "Bring Precious Frame to camera apps, social platforms, creator tools, sports, events, memories, and travel products as an SDK.",
   },
 ];
 
@@ -56,7 +56,7 @@ export default function App() {
   const [state, dispatch] = useReducer(runReducer, initialRunState);
   const [uiError, setUiError] = useState<string>();
   const [theme, setTheme] = useState<"light" | "dark">(() => {
-    const saved = window.localStorage.getItem("loopic-theme");
+    const saved = window.localStorage.getItem("precious-frame-theme");
     if (saved === "light" || saved === "dark") return saved;
     return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   });
@@ -64,7 +64,7 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    window.localStorage.setItem("loopic-theme", theme);
+    window.localStorage.setItem("precious-frame-theme", theme);
   }, [theme]);
 
   const launch = useCallback(async (videoIdPromise: Promise<string>, opts: RunOptions) => {
@@ -92,8 +92,8 @@ export default function App() {
   return (
     <div className="page" id="top">
       <header className="topbar">
-        <a className="brand" href="#top" aria-label="Loopic home">
-          <span className="brand-word">Loopic</span><span className="brand-stop">.</span>
+        <a className="brand" href="#top" aria-label="Precious Frame home">
+          <span className="brand-word">Precious Frame</span><span className="brand-stop">.</span>
         </a>
         {isLanding ? (
           <nav className="site-nav" aria-label="Primary navigation">
@@ -194,7 +194,7 @@ export default function App() {
 
       <footer className="footer">
         <div>
-          <strong>Loopic.</strong>
+          <strong>Precious Frame.</strong>
           <span>AI visual storytelling assistant</span>
         </div>
         <span>Built with Akash, Amazon Web Services, Cursor, TypeScript, and Zero.xyz.</span>
@@ -226,7 +226,7 @@ function LandingPage({ busy, onRunFile }: { busy: boolean; onRunFile: (file: Fil
             <a className="btn primary" href="#upload">Start with a video</a>
             <a className="btn ghost" href="#how-it-works">Read how it works</a>
           </div>
-          <div className="hero-facts" aria-label="Loopic capabilities">
+          <div className="hero-facts" aria-label="Precious Frame capabilities">
             <div><strong>01</strong><span>Extract</span></div>
             <div><strong>02</strong><span>Select</span></div>
             <div><strong>03</strong><span>Refine</span></div>
@@ -237,7 +237,7 @@ function LandingPage({ busy, onRunFile }: { busy: boolean; onRunFile: (file: Fil
 
       <figure className="editorial-visual">
         <img
-          src="/images/loopic-contact-sheet.jpg"
+          src="/images/precious-frame-contact-sheet.jpg"
           alt="A contact sheet of video frames with standout moments selected for a finished photograph"
         />
         <figcaption>
@@ -263,11 +263,11 @@ function LandingPage({ busy, onRunFile }: { busy: boolean; onRunFile: (file: Fil
             one frame that feels intentional is still a slow manual job.
           </p>
           <p>
-            Loopic treats a video like a contact sheet. It evaluates sharpness, exposure, contrast, color, visual
+            Precious Frame treats a video like a contact sheet. It evaluates sharpness, exposure, contrast, color, visual
             interest, and variety, then keeps the moments that work together as a set.
           </p>
           <blockquote>
-            “Today, Loopic finds the best photos hidden inside videos.”
+            “Today, Precious Frame finds the best photos hidden inside videos.”
           </blockquote>
         </div>
       </section>
@@ -301,7 +301,7 @@ function LandingPage({ busy, onRunFile }: { busy: boolean; onRunFile: (file: Fil
             <p>Adjust crop, exposure, contrast, saturation, temperature, or sharpening one decision at a time.</p>
           </article>
         </div>
-        <div className="loop-formula" aria-label="Loopic processing loop">
+        <div className="loop-formula" aria-label="Precious Frame processing loop">
           <span>Act</span><b>→</b><span>Observe</span><b>→</b><span>Score</span><b>→</b><span>Correct</span><b>→</b><span>Repeat</span>
         </div>
       </section>
@@ -331,7 +331,7 @@ function LandingPage({ busy, onRunFile }: { busy: boolean; onRunFile: (file: Fil
             <h2>From visual quality to personal visual taste.</h2>
           </div>
           <p>
-            General quality is only the beginning. Loopic is designed to grow into an assistant that understands why
+            General quality is only the beginning. Precious Frame is designed to grow into an assistant that understands why
             one image feels like yours and another does not.
           </p>
         </header>
@@ -354,7 +354,7 @@ function LandingPage({ busy, onRunFile }: { busy: boolean; onRunFile: (file: Fil
         </div>
         <div className="pro-copy">
           <p>
-            Loopic is not intended to replace a photographer's eye. It is an editing partner for the repetitive work:
+            Precious Frame is not intended to replace a photographer's eye. It is an editing partner for the repetitive work:
             culling, comparing, checking consistency, and preparing a first pass.
           </p>
           <ul>

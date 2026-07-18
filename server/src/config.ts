@@ -1,6 +1,6 @@
 export type EditorBackend = "local" | "zero";
 
-export interface LoopicConfig {
+export interface PreciousFrameConfig {
   /** Which editor backend Loop 2's act() drives. */
   editorBackend: EditorBackend;
   /** Run the final "pro enhancement" flourish on the winning frame via Zero. */
@@ -10,7 +10,7 @@ export interface LoopicConfig {
   seed: number;
 }
 
-export function loadConfig(env: NodeJS.ProcessEnv = process.env): LoopicConfig {
+export function loadConfig(env: NodeJS.ProcessEnv = process.env): PreciousFrameConfig {
   const backend = env.EDITOR_BACKEND === "zero" ? "zero" : "local";
   return {
     editorBackend: backend,

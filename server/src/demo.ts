@@ -1,5 +1,5 @@
 /**
- * Step-1 demo: full Loopic pipeline on mocks.
+ * Step-1 demo: full Precious Frame pipeline on mocks.
  *   Loop 1 re-ranks frames until the set is strong AND varied.
  *   Loop 2 refines each pick (crop + exposure) until the judge is happy.
  *   Winning frame gets the Zero.xyz final flourish (mock).
@@ -53,7 +53,7 @@ async function main(): Promise<void> {
   const store = new MockDataStore(); //       Nexla slot
 
   console.log("═".repeat(72));
-  console.log(`LOOPIC / mock demo / editor backend: ${config.editorBackend.toUpperCase()} (mock)`);
+  console.log(`PRECIOUS_FRAME / mock demo / editor backend: ${config.editorBackend.toUpperCase()} (mock)`);
   console.log("═".repeat(72));
 
   const frames = await extractor.extract("mock://upload/video.mp4");

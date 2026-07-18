@@ -68,7 +68,7 @@ export function subscribeToRun(runId: string, onEvent: (e: RunEvent) => void, on
     if (event.type === "run:done" || event.type === "run:error") source.close();
   };
   source.onerror = () => {
-    onError?.("Lost connection to the Loopic run stream. Start a new run and try again.");
+    onError?.("Lost connection to the Precious Frame run stream. Start a new run and try again.");
     source.close();
   };
   return () => source.close();
