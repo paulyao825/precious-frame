@@ -8,8 +8,6 @@ export interface AppCopy {
   homeAria: string;
   primaryNavAria: string;
   nav: { how: string; uses: string; next: string };
-  github: string;
-  sourceGithub: string;
   theme: { dark: string; light: string; switchToDark: string; switchToLight: string };
   labels: { vision: string; judge: string; newRun: string; ai: string; localFallback: string; visionAi: string };
   phase: { uploading: string; extracting: string; loop1: string; loop2: string };
@@ -61,7 +59,6 @@ export interface AppCopy {
     closingKicker: string;
     closingTitle: string;
     uploadVideo: string;
-    exploreSource: string;
   };
   upload: {
     eyebrow: string;
@@ -130,8 +127,6 @@ export const COPY: Record<Language, AppCopy> = {
     homeAria: "Precious Frame home",
     primaryNavAria: "Primary navigation",
     nav: { how: "How it works", uses: "Use cases", next: "What is next" },
-    github: "GitHub ↗",
-    sourceGithub: "Source on GitHub ↗",
     theme: { dark: "Dark", light: "Light", switchToDark: "Switch to dark mode", switchToLight: "Switch to light mode" },
     labels: { vision: "AI", judge: "AI", newRun: "new run", ai: "AI", localFallback: "local fallback", visionAi: "AI vision" },
     phase: { uploading: "extracting video frames", extracting: "preparing frames", loop1: "loop 1 / selecting frames", loop2: "loop 2 / refining edits" },
@@ -199,7 +194,6 @@ export const COPY: Record<Language, AppCopy> = {
       closingKicker: "The next frame is already there",
       closingTitle: "Turn motion into something worth remembering.",
       uploadVideo: "Upload a video",
-      exploreSource: "Explore the source ↗",
     },
     upload: { eyebrow: "Start a run", title: "Upload your video", description: "Precious Frame works best with short reels, clips, and highlight videos.", drop: "Drop a video here or", browse: "browse", preferenceLegend: "What should make a frame stand out?", bestShots: "best shots", judged: "Frames are judged by AI and refined locally with Sharp.", run: "Run the loops", working: "working…" },
     preferences: {
@@ -243,8 +237,6 @@ export const COPY: Record<Language, AppCopy> = {
     homeAria: "Precious Frame 首頁",
     primaryNavAria: "主要導覽",
     nav: { how: "運作方式", uses: "使用情境", next: "未來方向" },
-    github: "GitHub ↗",
-    sourceGithub: "GitHub 原始碼 ↗",
     theme: { dark: "暗色", light: "亮色", switchToDark: "切換至暗色模式", switchToLight: "切換至亮色模式" },
     labels: { vision: "AI", judge: "AI", newRun: "重新開始", ai: "AI", localFallback: "本機備援", visionAi: "AI 視覺判斷" },
     phase: { uploading: "擷取影片影格", extracting: "準備影格", loop1: "迴圈一／選擇影格", loop2: "迴圈二／改善修圖" },
@@ -312,7 +304,6 @@ export const COPY: Record<Language, AppCopy> = {
       closingKicker: "下一個瞬間已經在那裡",
       closingTitle: "把動態變成值得記住的畫面。",
       uploadVideo: "上傳影片",
-      exploreSource: "查看原始碼 ↗",
     },
     upload: { eyebrow: "開始一次處理", title: "上傳你的影片", description: "短 Reels、片段與精華影片最適合 Precious Frame。", drop: "把影片拖曳到這裡，或", browse: "瀏覽檔案", preferenceLegend: "你希望什麼讓影格脫穎而出？", bestShots: "最佳照片數", judged: "由 AI 評估影格，再由 Sharp 在本機完成修整。", run: "執行迴圈", working: "處理中…" },
     preferences: {

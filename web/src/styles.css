@@ -143,8 +143,7 @@ h3 {
   gap: 26px;
 }
 
-.site-nav a,
-.text-link {
+.site-nav a {
   color: var(--ink);
   font-family: var(--mono);
   font-size: 12px;
@@ -153,8 +152,7 @@ h3 {
   text-transform: uppercase;
 }
 
-.site-nav a:hover,
-.text-link:hover {
+.site-nav a:hover {
   color: var(--accent-strong);
   text-decoration: underline;
   text-underline-offset: 4px;
@@ -1585,7 +1583,6 @@ h3 {
     grid-column: auto;
   }
 
-  .topbar-right .text-link,
   .theme-toggle > span:last-child,
   .judge-chip {
     display: none;

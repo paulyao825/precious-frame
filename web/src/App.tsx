@@ -15,8 +15,6 @@ function runReducer(state: RunState, action: RunEvent | { type: "reset" } | { ty
   return reduceEvent(state, action);
 }
 
-const GITHUB_URL = "https://github.com/paulyao825/precious-frame";
-
 export default function App() {
   const [state, dispatch] = useReducer(runReducer, initialRunState);
   const [uiError, setUiError] = useState<string>();
@@ -71,9 +69,6 @@ export default function App() {
           </nav>
         ) : <span />}
         <div className="topbar-right">
-          <a className="text-link" href={GITHUB_URL} target="_blank" rel="noreferrer">
-            {text.github}
-          </a>
           <button
             className="language-toggle"
             type="button"
@@ -174,7 +169,6 @@ export default function App() {
           <span>{text.footer.assistant}</span>
         </div>
         <span>{text.footer.builtWith}</span>
-        <a href={GITHUB_URL} target="_blank" rel="noreferrer">{text.sourceGithub}</a>
       </footer>
     </div>
   );
@@ -346,7 +340,6 @@ function LandingPage({ busy, onRunFile, copy }: { busy: boolean; onRunFile: (fil
         <h2>{landing.closingTitle}</h2>
         <div className="hero-actions">
           <a className="btn primary" href="#upload">{landing.uploadVideo}</a>
-          <a className="btn ghost" href={GITHUB_URL} target="_blank" rel="noreferrer">{landing.exploreSource}</a>
         </div>
       </section>
     </main>
