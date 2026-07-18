@@ -47,3 +47,9 @@ test("vision aesthetic score is the largest frame-selection signal", () => {
   assert.equal(lowAesthetic, 4.5);
   assert.equal(highAesthetic, 5.5);
 });
+
+test("severe accidental blur prevents a high-story frame from winning on aesthetics alone", () => {
+  const clear = frameQualityScore({ sharpness: 0.65, exposure: 0.7, interest: 0.6, aesthetic: 0.75, blurRisk: 0 });
+  const blurred = frameQualityScore({ sharpness: 0.05, exposure: 0.7, interest: 0.6, aesthetic: 0.95, blurRisk: 1 });
+  assert.ok(clear > blurred);
+});

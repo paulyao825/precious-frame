@@ -20,6 +20,8 @@ real frame from the uploaded video.
 - combines vision judgment with local sharpness, exposure, color, and activity measurements
 - removes near-duplicates to return a varied photo set
 - improves crop, exposure, contrast, saturation, temperature, and sharpness with Sharp
+- runs an optional Gemini final review that rejects results compromised by accidental shake or blur
+- offers optional Nano Banana blur repair as a clearly labeled AI-assisted result
 - streams every selection and edit round to the React interface
 - falls back to local image analysis if the vision API is unavailable
 - supports light and dark modes and links directly to the source repository
@@ -62,6 +64,17 @@ POST https://api.moonshot.cn/v1/chat/completions
 
 If `MOONSHOT_API_KEY` is missing or a model request fails, the run continues with
 local pixel scoring and reports the fallback in the interface.
+
+## Optional Gemini final review
+
+Gemini performs a final technical review after the edit loop, with special attention to accidental camera shake and unreadable motion blur. Nano Banana repair is user-triggered and produces an AI-assisted image that may alter fine detail; it is not presented as an original photograph.
+
+```dotenv
+GEMINI_API_KEY=your-rotated-key
+GEMINI_FINAL_MODEL=gemini-3.5-flash
+NANO_BANANA_MODEL=gemini-3.1-flash-image
+GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
+```
 
 ## Photo preferences
 

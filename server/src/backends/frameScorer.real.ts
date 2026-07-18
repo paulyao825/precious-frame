@@ -14,13 +14,15 @@ export class RealFrameScorer implements FrameScorer {
     const hit = this.qualityCache.get(frame.id);
     if (hit) return hit;
     const s = await analyzeImage(frame.uri);
+    const sharpness = sharpnessScore(s.laplacianVariance) / 10;
     const q: FrameQuality = {
-      sharpness: sharpnessScore(s.laplacianVariance) / 10,
+      sharpness,
       exposure: Math.max(
         0,
         1 - Math.abs(s.meanLuma - 0.5) * 2.2 - s.clippedShadows * 2 - s.clippedHighlights * 2,
       ),
       interest: Math.min(1, s.edgeEnergy * 12),
+      blurRisk: Math.max(0, (0.42 - sharpness) / 0.42),
     };
     this.qualityCache.set(frame.id, q);
     return q;

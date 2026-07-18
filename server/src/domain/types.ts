@@ -49,13 +49,16 @@ export interface FrameQuality {
   interest: number;  // 0..1 (edge energy / something happening)
   /** Vision-model score for composition, human moment, and storytelling. */
   aesthetic?: number; // 0..1
+  /** Local estimate of accidental shake/focus blur; 0 = clear, 1 = unusable. */
+  blurRisk?: number;
 }
 
 export function frameQualityScore(q: FrameQuality): number {
+  const blurPenalty = 3.5 * Math.max(0, Math.min(1, q.blurRisk ?? 0));
   if (q.aesthetic !== undefined) {
-    return 10 * (0.2 * q.sharpness + 0.15 * q.exposure + 0.1 * q.interest + 0.55 * q.aesthetic);
+    return Math.max(0, 10 * (0.2 * q.sharpness + 0.15 * q.exposure + 0.1 * q.interest + 0.55 * q.aesthetic) - blurPenalty);
   }
-  return 10 * (0.45 * q.sharpness + 0.35 * q.exposure + 0.2 * q.interest);
+  return Math.max(0, 10 * (0.45 * q.sharpness + 0.35 * q.exposure + 0.2 * q.interest) - blurPenalty);
 }
 
 export function clamp(v: number, lo: number, hi: number): number {

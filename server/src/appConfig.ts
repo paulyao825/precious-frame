@@ -15,8 +15,18 @@ export interface JudgeConfig {
   note?: string;
 }
 
+export interface GeminiConfig {
+  enabled: boolean;
+  model: string;
+  imageModel: string;
+  apiKey?: string;
+  baseUrl: string;
+  note?: string;
+}
+
 export interface AppConfig {
   judge: JudgeConfig;
+  geminiFinalJudge: GeminiConfig;
   loop: { bar: number; maxRounds: number };
 }
 
@@ -48,6 +58,7 @@ export function loadAppConfig(): AppConfig {
   }
 
   const judgeRaw = (raw.judge ?? {}) as Record<string, string>;
+  const geminiRaw = (raw.geminiFinalJudge ?? {}) as Record<string, string>;
   const loopRaw = (raw.loop ?? {}) as Record<string, number>;
   const requestedProvider = process.env.VISION_PROVIDER ?? judgeRaw.provider ?? "kimi";
   let judge: JudgeConfig = { provider: "heuristic", model: "pixel-stats", baseUrl: "" };
@@ -72,8 +83,19 @@ export function loadAppConfig(): AppConfig {
     judge.note = `unknown vision provider "${requestedProvider}" - using local pixel scoring`;
   }
 
+  const geminiApiKey = process.env.GEMINI_API_KEY;
+  const geminiFinalJudge: GeminiConfig = {
+    enabled: Boolean(geminiApiKey),
+    model: process.env.GEMINI_FINAL_MODEL ?? geminiRaw.model ?? "gemini-3.5-flash",
+    imageModel: process.env.NANO_BANANA_MODEL ?? geminiRaw.imageModel ?? "gemini-3.1-flash-image",
+    apiKey: geminiApiKey,
+    baseUrl: (process.env.GEMINI_BASE_URL ?? geminiRaw.baseUrl ?? "https://generativelanguage.googleapis.com/v1beta").replace(/\/+$/, ""),
+  };
+  if (!geminiApiKey) geminiFinalJudge.note = "AI final review is not configured";
+
   return {
     judge,
+    geminiFinalJudge,
     loop: {
       bar: boundedNumber(loopRaw.bar, 7.5, 0, 10),
       maxRounds: Math.round(boundedNumber(loopRaw.maxRounds, 8, 1, 20)),

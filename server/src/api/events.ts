@@ -39,6 +39,6 @@ export type RunEvent =
   | { type: "loop2:done"; frameId: string; converged: boolean; bestScore: number; bestUrl: string; rounds: number }
   | {
       type: "run:done";
-      results: Array<{ frameId: string; score: number; url: string; winner: boolean }>;
+      results: Array<{ frameId: string; score: number; url: string; winner: boolean; blurRisk?: number; finalReason?: string }>;
     }
   | { type: "run:error"; message: string };

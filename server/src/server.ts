@@ -110,6 +110,19 @@ app.post("/api/refine", upload.single("image"), async (req, res) => {
   }
 });
 
+app.post("/api/repair-blur", upload.single("image"), async (req, res) => {
+  const file = req.file;
+  if (!file) return res.status(400).json({ error: "no result image" });
+
+  const rawFrameId = String(req.body?.frameId ?? "result");
+  const frameId = /^[A-Za-z0-9_-]{1,64}$/.test(rawFrameId) ? rawFrameId : "result";
+  try {
+    return res.json(await runs.repairBlur({ id: frameId, t: 0, uri: file.path }));
+  } catch (error) {
+    return res.status(503).json({ error: String(error instanceof Error ? error.message : error) });
+  }
+});
+
 function inlineMedia<T>(value: T): T {
   if (typeof value === "string" && value.startsWith("/media/")) {
     const jpeg = readFileSync(resolvePath(value)).toString("base64");

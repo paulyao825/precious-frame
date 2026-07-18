@@ -18,6 +18,10 @@ export interface ResultRefinement {
   usedLocalFallback: boolean;
 }
 
+export interface BlurRepairResult {
+  url: string;
+}
+
 /**
  * Runs extraction in the browser, then keeps processing and progress events in
  * one request. This is required on serverless hosts where memory and /tmp are
@@ -55,6 +59,19 @@ export async function refineResult(
   const response = await fetch(api("/api/refine"), { method: "POST", body: form });
   const payload = await response.json() as ResultRefinement & { error?: string };
   if (!response.ok) throw new Error(payload.error ?? "AI refinement failed.");
+  return absolutizeMedia(payload);
+}
+
+export async function repairBlur(result: { frameId: string; url: string }): Promise<BlurRepairResult> {
+  const imageResponse = await fetch(result.url);
+  if (!imageResponse.ok) throw new Error("Could not read the selected result image.");
+
+  const form = new FormData();
+  form.append("image", await imageResponse.blob(), `${result.frameId}.jpg`);
+  form.append("frameId", result.frameId);
+  const response = await fetch(api("/api/repair-blur"), { method: "POST", body: form });
+  const payload = await response.json() as BlurRepairResult & { error?: string };
+  if (!response.ok) throw new Error(payload.error ?? "AI blur repair failed.");
   return absolutizeMedia(payload);
 }
 

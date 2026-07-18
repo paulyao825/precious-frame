@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { refineResult } from "../api";
+import { refineResult, repairBlur } from "../api";
 import type { PhotoPreference, ResultInfo } from "../types";
 import { ScorePill } from "./bits";
 import type { AppCopy } from "../i18n";
@@ -25,7 +25,7 @@ export function FinalGallery({
   results: ResultInfo[];
   preference: PhotoPreference;
   copy: AppCopy;
-  onRefined: (result: Pick<ResultInfo, "frameId" | "url" | "score">) => void;
+  onRefined: (result: Pick<ResultInfo, "frameId" | "url" | "score" | "blurRisk" | "finalReason" | "generated">) => void;
 }) {
   return (
     <section className="card fade-in">
@@ -53,14 +53,17 @@ function ResultCard({
   result: ResultInfo;
   preference: PhotoPreference;
   copy: AppCopy;
-  onRefined: (result: Pick<ResultInfo, "frameId" | "url" | "score">) => void;
+  onRefined: (result: Pick<ResultInfo, "frameId" | "url" | "score" | "blurRisk" | "finalReason" | "generated">) => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [repairOpen, setRepairOpen] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [refining, setRefining] = useState(false);
   const [feedbackError, setFeedbackError] = useState<string>();
   const [feedbackStatus, setFeedbackStatus] = useState<string>();
+  const [repairError, setRepairError] = useState<string>();
+  const [repairing, setRepairing] = useState(false);
   const [adjustments, setAdjustments] = useState<ImageAdjustments>(DEFAULT_ADJUSTMENTS);
   const imageRef = useRef<HTMLImageElement>(null);
   const filter = cssFilter(adjustments);
@@ -93,6 +96,21 @@ function ResultCard({
     }
   };
 
+  const repair = async () => {
+    if (repairing) return;
+    setRepairing(true);
+    setRepairError(undefined);
+    try {
+      const repaired = await repairBlur(result);
+      onRefined({ frameId: result.frameId, url: repaired.url, score: result.score, generated: true });
+      setRepairOpen(false);
+    } catch (error) {
+      setRepairError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setRepairing(false);
+    }
+  };
+
   const save = () => {
     const image = imageRef.current;
     if (!image?.naturalWidth || !image.naturalHeight) return;
@@ -121,6 +139,7 @@ function ResultCard({
   return (
     <figure className={`result-card ${result.winner ? "winner" : ""}`}>
       {result.winner && <div className="winner-banner">{copy.output.winner}</div>}
+      {result.generated && <div className="repair-banner">{copy.output.generatedRepair}</div>}
       <img ref={imageRef} src={result.url} alt={result.frameId} style={{ filter }} />
       <figcaption>
         <span className="mono">{result.frameId}</span>
@@ -142,6 +161,9 @@ function ResultCard({
             onClick={() => setFeedbackOpen((current) => !current)}
           >
             {copy.output.feedback}
+          </button>
+          <button className="btn tiny" type="button" aria-expanded={repairOpen} onClick={() => setRepairOpen((current) => !current)}>
+            {copy.output.repairBlur}
           </button>
           <button
             className="save-result"
@@ -181,6 +203,18 @@ function ResultCard({
           {feedbackStatus && <p className="feedback-status">{feedbackStatus}</p>}
           {feedbackError && <p className="feedback-error">{feedbackError}</p>}
         </div>
+      )}
+      {repairOpen && (
+        <div className="result-repair">
+          <p>{copy.output.repairWarning}</p>
+          <button className="btn primary tiny" type="button" disabled={repairing} onClick={() => void repair()}>
+            {repairing ? copy.output.repairingBlur : copy.output.repairBlur}
+          </button>
+          {repairError && <p className="feedback-error">{repairError}</p>}
+        </div>
+      )}
+      {result.blurRisk !== undefined && result.blurRisk >= 5 && (
+        <p className="blur-risk" title={result.finalReason}>{copy.output.blurRisk}</p>
       )}
     </figure>
   );

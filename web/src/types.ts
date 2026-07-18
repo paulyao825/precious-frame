@@ -51,6 +51,9 @@ export interface ResultInfo {
   score: number;
   url: string;
   winner: boolean;
+  blurRisk?: number;
+  finalReason?: string;
+  generated?: boolean;
 }
 
 export type RunEvent =
@@ -74,7 +77,7 @@ export type RunEvent =
   | { type: "loop2:round"; frameId: string; info: RoundInfo; imageUrl: string; recipe: Recipe }
   | { type: "loop2:done"; frameId: string; converged: boolean; bestScore: number; bestUrl: string; rounds: number }
   | { type: "run:done"; results: ResultInfo[] }
-  | { type: "result:refined"; frameId: string; url: string; score: number }
+  | { type: "result:refined"; frameId: string; url: string; score: number; blurRisk?: number; finalReason?: string; generated?: boolean }
   | { type: "run:error"; message: string };
 
 export interface Loop1Round {
@@ -192,7 +195,7 @@ export function reduceEvent(state: RunState, e: RunEvent): RunState {
     case "result:refined": {
       if (!state.results) return state;
       const updated = state.results.map((result) =>
-        result.frameId === e.frameId ? { ...result, url: e.url, score: e.score } : result,
+        result.frameId === e.frameId ? { ...result, url: e.url, score: e.score, blurRisk: e.blurRisk, finalReason: e.finalReason, generated: e.generated } : result,
       );
       const bestScore = Math.max(...updated.map((result) => result.score));
       return {

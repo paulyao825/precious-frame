@@ -6,6 +6,12 @@
     "model": "kimi-k2.6",
     "baseUrl": "https://api.moonshot.cn/v1"
   },
+  "geminiFinalJudge": {
+    "$comment": "Requires GEMINI_API_KEY. Gemini scores final results; Nano Banana repairs blur only after user confirmation.",
+    "model": "gemini-3.5-flash",
+    "imageModel": "gemini-3.1-flash-image",
+    "baseUrl": "https://generativelanguage.googleapis.com/v1beta"
+  },
   "loop": {
     "$comment": "bar is the score needed to stop early.",
     "bar": 7.5,

@@ -115,6 +115,11 @@ export interface AppCopy {
     refining: string;
     feedbackApplied: string;
     feedbackFallback: string;
+    repairBlur: string;
+    repairingBlur: string;
+    repairWarning: string;
+    generatedRepair: string;
+    blurRisk: string;
   };
 }
 
@@ -225,6 +230,11 @@ export const COPY: Record<Language, AppCopy> = {
       refining: "refining…",
       feedbackApplied: "Feedback applied",
       feedbackFallback: "AI unavailable; local refinement applied",
+      repairBlur: "Repair blur",
+      repairingBlur: "repairing…",
+      repairWarning: "Creates an AI-assisted version and may alter fine details.",
+      generatedRepair: "AI REPAIR",
+      blurRisk: "SHAKE / BLUR RISK",
     },
   },
   "zh-Hant": {
@@ -333,6 +343,11 @@ export const COPY: Record<Language, AppCopy> = {
       refining: "修整中…",
       feedbackApplied: "已套用回饋",
       feedbackFallback: "AI 無法使用，已套用本機修整",
+      repairBlur: "修復模糊",
+      repairingBlur: "修復中…",
+      repairWarning: "會產生 AI 輔助版本，細節可能有所改變。",
+      generatedRepair: "AI 修復",
+      blurRisk: "手震／模糊風險",
     },
   },
 };

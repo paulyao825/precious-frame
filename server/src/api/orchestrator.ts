@@ -11,6 +11,8 @@ import type { VisionJudge } from "../backends/judge.js";
 import { ResilientJudge } from "../backends/judge.js";
 import { HeuristicVisionJudge } from "../backends/judge.heuristic.js";
 import { LlmVisionJudge } from "../backends/judge.llm.js";
+import { GeminiFinalJudge } from "../backends/finalJudge.gemini.js";
+import { NanoBananaBlurRepair } from "../backends/blurRepair.gemini.js";
 import type { LoopRound } from "../core/loop.js";
 import { runLoop } from "../core/loop.js";
 import type { EditedImage, Frame } from "../domain/types.js";
@@ -30,6 +32,14 @@ export interface FeedbackRefineRequest {
   frame: Frame;
   preference: PhotoPreference;
   feedback: string;
+}
+
+interface RefinedResult {
+  frame: Frame;
+  image: EditedImage;
+  score: number;
+  blurRisk?: number;
+  finalReason?: string;
 }
 
 export class RunManager {
@@ -63,6 +73,13 @@ export class RunManager {
     );
 
     return { url: result.best.uri, score: result.bestScore, usedLocalFallback };
+  }
+
+  async repairBlur(frame: Frame): Promise<{ url: string }> {
+    const cfg = loadAppConfig();
+    if (!cfg.geminiFinalJudge.enabled) throw new Error("AI blur repair is not configured");
+    const repaired = await new NanoBananaBlurRepair(cfg.geminiFinalJudge).repair(frame);
+    return { url: repaired.dataUrl };
   }
 
   private async execute(runId: string, req: RunRequest, emit: (event: RunEvent) => void): Promise<void> {
@@ -107,7 +124,7 @@ export class RunManager {
       bestScore: selection.bestScore,
     });
 
-    const results: Array<{ frame: Frame; image: EditedImage; score: number }> = [];
+    const results: RefinedResult[] = [];
     for (const frame of selection.best) {
       emit({ type: "loop2:start", frameId: frame.id });
       const result = await runLoop(
@@ -136,16 +153,43 @@ export class RunManager {
     }
 
     if (results.length === 0) throw new Error("no frames were selected for editing");
-    const winner = results.reduce((best, result) => (result.score > best.score ? result : best));
+    const finalResults = await this.applyFinalJudge(cfg, results, emit);
+    const winner = finalResults.reduce((best, result) => (result.score > best.score ? result : best));
     emit({
       type: "run:done",
-      results: results.map((result) => ({
+      results: finalResults.map((result) => ({
         frameId: result.frame.id,
         score: result.score,
         url: result.image.uri,
         winner: result.frame.id === winner.frame.id,
+        blurRisk: result.blurRisk,
+        finalReason: result.finalReason,
       })),
     });
+  }
+
+  private async applyFinalJudge(cfg: AppConfig, results: RefinedResult[], emit: (event: RunEvent) => void): Promise<RefinedResult[]> {
+    if (!cfg.geminiFinalJudge.enabled) return results;
+
+    try {
+      const verdicts = await new GeminiFinalJudge(this.resolvePath, cfg.geminiFinalJudge).judge(
+        results.map((result) => ({ frameId: result.frame.id, uri: result.image.uri })),
+      );
+      const byId = new Map(verdicts.map((verdict) => [verdict.frameId, verdict]));
+      const ranked = results.map((result) => {
+        const verdict = byId.get(result.frame.id)!;
+        const score = Math.max(0, Math.round((0.7 * result.score + 0.3 * verdict.score - Math.max(0, verdict.shakeBlur - 6) * 0.8) * 10) / 10);
+        return { ...result, score, blurRisk: verdict.shakeBlur, finalReason: verdict.reason };
+      });
+      const usable = ranked.filter((result) => (result.blurRisk ?? 0) < 7);
+      return (usable.length > 0 ? usable : ranked).sort((a, b) => b.score - a.score);
+    } catch (error) {
+      emit({
+        type: "judge:fallback",
+        message: `AI final review failed (${String(error).slice(0, 180)}) - keeping the existing result set`,
+      });
+      return results;
+    }
   }
 
   private buildJudge(
