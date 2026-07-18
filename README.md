@@ -14,7 +14,7 @@ real frame from the uploaded video.
 
 ## Current prototype
 
-- extracts frames from uploaded videos with FFmpeg
+- extracts bounded candidate frames privately in the browser
 - scores composition, authentic moments, action, and visual storytelling with GLM-4.6V Flash
 - combines vision judgment with local sharpness, exposure, color, and activity measurements
 - removes near-duplicates to return a varied photo set
@@ -28,9 +28,9 @@ real frame from the uploaded video.
 | Part | Tool | Why it is here |
 | --- | --- | --- |
 | Web interface | React + Vite | Uploads, progress, comparisons, and final gallery |
-| API | Express | Video upload, run orchestration, and SSE progress stream |
+| API | Express | Frame processing, run orchestration, and SSE progress stream |
 | Language | TypeScript | One typed codebase from UI to processing pipeline |
-| Video processing | FFmpeg | Reliable extraction of actual video frames |
+| Video processing | Browser Canvas | Extracts real frames without uploading the full video |
 | Image processing | Sharp | Fast local crop, color, exposure, and detail edits |
 | Vision model | GLM-4.6V Flash | Selects meaningful frames and judges edit quality |
 
@@ -136,14 +136,15 @@ the round cap.
 
 ## Deployment
 
-The included `Dockerfile` serves both the API and built website from one common
-Node.js container. Deploy it to a long-running container host such as Railway,
-Render, or Fly.io and add `GLM_API_KEY` as a secret environment variable.
+The included Vercel configuration builds the React app and runs the Express API
+as one streaming Node.js Function. The browser extracts up to 24 bounded JPEG
+frames, so the full video never crosses the serverless request boundary. The
+API processes those frames and returns progress plus generated images in the
+same response, avoiding cross-instance memory and `/tmp` dependencies.
 
-The application accepts large video uploads and keeps a live SSE stream open
-while frames are processed. A static website host can serve the React frontend,
-but the processing API still needs a long-running container. Set
-`VITE_API_BASE` to that API URL when deploying the frontend separately.
+Set `GLM_API_KEY` in the deployment environment. The included `Dockerfile` also
+serves the API and built website from one Node.js container when a container
+host is preferred.
 
 ## What's next for Precious Frame
 
@@ -174,8 +175,8 @@ becomes the AI that understands every visual moment worth remembering.
 server/src/core/loop.ts          reusable act/observe/score/correct loop
 server/src/loops/                frame selection and edit refinement
 server/src/backends/             GLM judge/scorer and Sharp editor
-server/src/media/                FFmpeg extraction and image analysis
+server/src/media/                local image analysis
 server/src/api/                  run orchestration and streamed event types
-server/src/server.ts             Express API, uploads, SSE, and static web
+server/src/server.ts             Express frame API, SSE, and static web
 web/                             React + Vite interface
 ```

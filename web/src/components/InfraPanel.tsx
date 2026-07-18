@@ -26,12 +26,12 @@ export function InfraPanel({ state }: { state: RunState }) {
 
       <div className="infra-row">
         <div className="infra-label">Video and image processing<span className="pill pass">local</span></div>
-        <div className="infra-note muted">FFmpeg extracts real frames; Sharp applies crop, color, and detail edits.</div>
+        <div className="infra-note muted">The browser extracts real frames; Sharp applies crop, color, and detail edits.</div>
       </div>
 
       <div className="infra-row">
         <div className="infra-label">Application API<span className="pill pass">standard</span></div>
-        <div className="infra-note muted">Express handles uploads and streams run progress to React over SSE.</div>
+        <div className="infra-note muted">Express processes frames and streams the complete run over one SSE request.</div>
       </div>
     </section>
   );

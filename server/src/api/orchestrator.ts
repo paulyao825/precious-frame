@@ -16,58 +16,27 @@ import { runLoop } from "../core/loop.js";
 import type { EditedImage, Frame } from "../domain/types.js";
 import { initialRefineState, makeEditRefinementLoop } from "../loops/editRefinement.js";
 import { initialSelectionState, makeFrameSelectionLoop } from "../loops/frameSelection.js";
-import { extractFrames } from "../media/ffmpeg.js";
 import type { FrameInfo, RoundInfo, RunEvent } from "./events.js";
 
 export interface RunRequest {
-  videoPath: string;
+  frames: Frame[];
   n: number;
 }
 
-interface RunRecord {
-  events: RunEvent[];
-  listeners: Set<(event: RunEvent) => void>;
-  done: boolean;
-}
-
 export class RunManager {
-  private readonly runs = new Map<string, RunRecord>();
-
   constructor(
     private readonly dataDir: string,
     private readonly urlFor: (absPath: string) => string,
     private readonly resolvePath: (url: string) => string,
   ) {}
 
-  get(runId: string): RunRecord | undefined {
-    return this.runs.get(runId);
-  }
-
-  subscribe(runId: string, listener: (event: RunEvent) => void): () => void {
-    const run = this.runs.get(runId);
-    if (!run) throw new Error(`unknown run ${runId}`);
-    for (const event of run.events) listener(event);
-    run.listeners.add(listener);
-    return () => run.listeners.delete(listener);
-  }
-
-  start(req: RunRequest): string {
+  async run(req: RunRequest, emit: (event: RunEvent) => void): Promise<void> {
     const runId = randomUUID().slice(0, 8);
-    const record: RunRecord = { events: [], listeners: new Set(), done: false };
-    this.runs.set(runId, record);
-
-    const emit = (event: RunEvent) => {
-      record.events.push(event);
-      for (const listener of record.listeners) listener(event);
-    };
-
-    this.execute(runId, req, emit)
-      .catch((err) => emit({ type: "run:error", message: String(err?.message ?? err) }))
-      .finally(() => {
-        record.done = true;
-      });
-
-    return runId;
+    try {
+      await this.execute(runId, req, emit);
+    } catch (err) {
+      emit({ type: "run:error", message: String(err instanceof Error ? err.message : err) });
+    }
   }
 
   private async execute(runId: string, req: RunRequest, emit: (event: RunEvent) => void): Promise<void> {
@@ -88,12 +57,7 @@ export class RunManager {
     });
 
     emit({ type: "extract:start" });
-    const extracted = await extractFrames(req.videoPath, path.join(runDir, "frames"));
-    const frames: Frame[] = extracted.map((frame, index) => ({
-      id: `frame_${String(index + 1).padStart(3, "0")}`,
-      t: frame.t,
-      uri: frame.path,
-    }));
+    const frames = req.frames;
     const frameInfos: FrameInfo[] = frames.map((frame) => ({ id: frame.id, t: frame.t, url: this.urlFor(frame.uri) }));
     emit({ type: "extract:done", frames: frameInfos });
 

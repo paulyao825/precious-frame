@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { reduceEvent, initialRunState, type RunState, type RunEvent } from "./types";
-import { startRun, subscribeToRun, uploadVideo } from "./api";
+import { runVideo } from "./api";
 import { UploadPanel, type RunOptions } from "./components/UploadPanel";
 import { Loop1Panel } from "./components/Loop1Panel";
 import { Loop2Card } from "./components/Loop2Card";
@@ -15,8 +15,8 @@ function runReducer(state: RunState, action: RunEvent | { type: "reset" } | { ty
 }
 
 const PHASE_LABEL: Record<string, string> = {
-  uploading: "uploading video",
-  extracting: "extracting frames",
+  uploading: "extracting video frames",
+  extracting: "preparing frames",
   loop1: "loop 1 / selecting frames",
   loop2: "loop 2 / refining edits",
 };
@@ -66,21 +66,14 @@ export default function App() {
     window.localStorage.setItem("precious-frame-theme", theme);
   }, [theme]);
 
-  const launch = useCallback(async (videoIdPromise: Promise<string>, opts: RunOptions) => {
-    try {
-      setUiError(undefined);
-      unsubscribe.current?.();
-      dispatch({ type: "uploading" });
-      const videoId = await videoIdPromise;
-      const runId = await startRun({ videoId, ...opts });
-      unsubscribe.current = subscribeToRun(runId, dispatch, (message) => {
-        setUiError(message);
-        dispatch({ type: "reset" });
-      });
-    } catch (err) {
-      setUiError(String(err instanceof Error ? err.message : err));
+  const launch = useCallback((file: File, opts: RunOptions) => {
+    setUiError(undefined);
+    unsubscribe.current?.();
+    dispatch({ type: "uploading" });
+    unsubscribe.current = runVideo(file, opts.n, dispatch, (message) => {
+      setUiError(message);
       dispatch({ type: "reset" });
-    }
+    });
   }, []);
 
   const busy = !["idle", "done", "error"].includes(state.phase);
@@ -138,7 +131,7 @@ export default function App() {
       {isLanding ? (
         <LandingPage
           busy={state.phase === "uploading"}
-          onRunFile={(file, opts) => launch(uploadVideo(file), opts)}
+          onRunFile={launch}
         />
       ) : (
         <main className="pipeline">
@@ -186,7 +179,7 @@ export default function App() {
           <strong>Precious Frame.</strong>
           <span>AI visual storytelling assistant</span>
         </div>
-        <span>Built with React, Express, TypeScript, FFmpeg, Sharp, and GLM Vision.</span>
+        <span>Built with React, Express, TypeScript, Canvas, Sharp, and GLM Vision.</span>
         <a href={GITHUB_URL} target="_blank" rel="noreferrer">Source on GitHub ↗</a>
       </footer>
     </div>
@@ -363,13 +356,13 @@ function LandingPage({ busy, onRunFile }: { busy: boolean; onRunFile: (file: Fil
         </header>
         <div className="stack-grid">
           <article><strong>GLM-4.6V</strong><span>Multimodal frame selection and concrete edit judgment</span></article>
-          <article><strong>FFmpeg</strong><span>Reliable frame extraction from uploaded video</span></article>
+          <article><strong>Browser Canvas</strong><span>Private, size-safe frame extraction from the selected video</span></article>
           <article><strong>Sharp</strong><span>Local crop, color, exposure, and detail adjustments</span></article>
           <article><strong>React + Express</strong><span>Upload interface, progress stream, and results</span></article>
           <article><strong>TypeScript</strong><span>One typed workflow from API to interface</span></article>
         </div>
         <p className="stack-note">
-          GLM Vision is the only external processing service. Video extraction and image edits run locally, and the workflow
+          GLM Vision is the only external processing service. Video extraction runs in the browser, image edits run locally, and the workflow
           falls back to local image analysis when the vision API is unavailable.
         </p>
       </section>
