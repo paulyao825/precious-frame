@@ -20,13 +20,18 @@ export const JUDGE_HINTS = [
   "sharpen", "soften",
 ] as const;
 
-export function buildEditJudgePrompt(preference: PhotoPreference): string {
+export function buildEditJudgePrompt(preference: PhotoPreference, userFeedback?: string): string {
   const profile = preferenceProfile(preference);
+  const feedbackInstruction = userFeedback
+    ? `\nUser feedback (prioritize this direction when it is achievable with the supported edits): ${JSON.stringify(userFeedback)}
+If the feedback asks for crop, framing, exposure, contrast, color, temperature, or sharpness, return the matching actionable hint even when the image already clears the general quality bar. Do not remove important story, context, expression, gesture, or intentional atmosphere to satisfy the request.`
+    : "";
   return `You are a professional photo-edit judge inside an automated critique-and-refine loop.
 Apply criteria adapted from PPA merit-image judging and World Press Photo visual quality, story, and authenticity standards.
 You receive two images in order: the original source frame, then the edited candidate. Judge only the edited candidate,
 but compare it with the source so the edit does not remove important story, context, expression, gesture, or atmosphere.
 User preference: ${profile.label}. ${profile.focus}
+${feedbackInstruction}
 
 Score the edited candidate 0-10 on exactly these actionable axes:
 - cropFraming: intentional visual hierarchy, balance, edge control, gaze/action room, useful negative space, and retained context
@@ -49,6 +54,7 @@ export class LlmVisionJudge implements VisionJudge {
     private readonly resolvePath: (uri: string) => string,
     private readonly cfg: JudgeConfig,
     private readonly preference: PhotoPreference,
+    private readonly userFeedback?: string,
   ) {}
 
   async critique(source: Frame, image: EditedImage): Promise<Critique> {
@@ -67,7 +73,7 @@ export class LlmVisionJudge implements VisionJudge {
       body: {
         max_tokens: 700,
         messages: [
-          { role: "system", content: buildEditJudgePrompt(this.preference) },
+          { role: "system", content: buildEditJudgePrompt(this.preference, this.userFeedback) },
           {
             role: "user",
             content: [

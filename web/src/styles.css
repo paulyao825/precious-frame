@@ -1229,6 +1229,62 @@ h3 {
   background: var(--paper);
 }
 
+.result-feedback {
+  display: grid;
+  gap: 9px;
+  padding: 12px;
+  border-top: 1px solid var(--rule-soft);
+  background: var(--paper);
+}
+
+.feedback-title {
+  color: var(--accent-strong);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.result-feedback p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.result-feedback textarea {
+  width: 100%;
+  min-height: 84px;
+  resize: vertical;
+  padding: 9px;
+  border: 1px solid var(--rule-soft);
+  border-radius: 0;
+  background: var(--paper-raised);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.result-feedback textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.feedback-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.feedback-status {
+  color: var(--good) !important;
+}
+
+.feedback-error {
+  color: var(--bad) !important;
+}
+
 .result-adjustment {
   display: grid;
   gap: 4px;

@@ -108,6 +108,13 @@ export interface AppCopy {
     brightness: string;
     contrast: string;
     saturation: string;
+    feedback: string;
+    feedbackHint: string;
+    feedbackPlaceholder: string;
+    refine: string;
+    refining: string;
+    feedbackApplied: string;
+    feedbackFallback: string;
   };
 }
 
@@ -211,6 +218,13 @@ export const COPY: Record<Language, AppCopy> = {
       brightness: "Brightness",
       contrast: "Contrast",
       saturation: "Color",
+      feedback: "Direct the AI",
+      feedbackHint: "Describe a better crop or adjustment for this photo.",
+      feedbackPlaceholder: "e.g. Crop tighter around the two people and keep their hands.",
+      refine: "Refine",
+      refining: "refining…",
+      feedbackApplied: "Feedback applied",
+      feedbackFallback: "AI unavailable; local refinement applied",
     },
   },
   "zh-Hant": {
@@ -312,6 +326,13 @@ export const COPY: Record<Language, AppCopy> = {
       brightness: "亮度",
       contrast: "對比",
       saturation: "色彩",
+      feedback: "指示 AI 修整",
+      feedbackHint: "描述你希望這張照片如何裁切或調整。",
+      feedbackPlaceholder: "例如：裁切得更靠近兩個人，但保留他們的手部動作。",
+      refine: "重新修整",
+      refining: "修整中…",
+      feedbackApplied: "已套用回饋",
+      feedbackFallback: "AI 無法使用，已套用本機修整",
     },
   },
 };

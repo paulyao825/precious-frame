@@ -12,6 +12,12 @@ const api = (path: string) => `${API_BASE}${path}`;
 const MAX_FRAMES = 24;
 const MAX_FRAME_BYTES = 120 * 1024;
 
+export interface ResultRefinement {
+  url: string;
+  score: number;
+  usedLocalFallback: boolean;
+}
+
 /**
  * Runs extraction in the browser, then keeps processing and progress events in
  * one request. This is required on serverless hosts where memory and /tmp are
@@ -29,6 +35,27 @@ export function runVideo(
     if (!controller.signal.aborted) onError?.(error instanceof Error ? error.message : String(error));
   });
   return () => controller.abort();
+}
+
+export async function refineResult(
+  result: { frameId: string; url: string },
+  preference: PhotoPreference,
+  feedback: string,
+): Promise<ResultRefinement> {
+  const imageResponse = await fetch(result.url);
+  if (!imageResponse.ok) throw new Error("Could not read the selected result image.");
+
+  const image = await imageResponse.blob();
+  const form = new FormData();
+  form.append("image", image, `${result.frameId}.jpg`);
+  form.append("frameId", result.frameId);
+  form.append("preference", preference);
+  form.append("feedback", feedback.trim());
+
+  const response = await fetch(api("/api/refine"), { method: "POST", body: form });
+  const payload = await response.json() as ResultRefinement & { error?: string };
+  if (!response.ok) throw new Error(payload.error ?? "AI refinement failed.");
+  return absolutizeMedia(payload);
 }
 
 async function streamRun(

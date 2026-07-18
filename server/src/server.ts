@@ -82,6 +82,34 @@ app.post("/api/run", upload.array("frames", 24), async (req, res) => {
   res.end();
 });
 
+app.post("/api/refine", upload.single("image"), async (req, res) => {
+  const file = req.file;
+  if (!file) return res.status(400).json({ error: "no result image" });
+
+  const rawPreference = req.body?.preference;
+  if (rawPreference !== undefined && !isPhotoPreference(rawPreference)) {
+    return res.status(400).json({ error: "unknown photo preference" });
+  }
+
+  const feedback = String(req.body?.feedback ?? "").trim();
+  if (!feedback) return res.status(400).json({ error: "feedback is required" });
+  if (feedback.length > 600) return res.status(400).json({ error: "feedback must be 600 characters or fewer" });
+
+  const rawFrameId = String(req.body?.frameId ?? "result");
+  const frameId = /^[A-Za-z0-9_-]{1,64}$/.test(rawFrameId) ? rawFrameId : "result";
+
+  try {
+    const result = await runs.refineFromFeedback({
+      frame: { id: frameId, t: 0, uri: file.path },
+      preference: rawPreference ?? "balanced",
+      feedback,
+    });
+    return res.json(inlineMedia(result));
+  } catch (error) {
+    return res.status(500).json({ error: String(error instanceof Error ? error.message : error) });
+  }
+});
+
 function inlineMedia<T>(value: T): T {
   if (typeof value === "string" && value.startsWith("/media/")) {
     const jpeg = readFileSync(resolvePath(value)).toString("base64");

@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
-import type { ResultInfo } from "../types";
+import { useEffect, useRef, useState } from "react";
+import { refineResult } from "../api";
+import type { PhotoPreference, ResultInfo } from "../types";
 import { ScorePill } from "./bits";
 import type { AppCopy } from "../i18n";
 
@@ -15,7 +16,17 @@ function cssFilter(adjustments: ImageAdjustments) {
   return `brightness(${adjustments.brightness}%) contrast(${adjustments.contrast}%) saturate(${adjustments.saturation}%)`;
 }
 
-export function FinalGallery({ results, copy }: { results: ResultInfo[]; copy: AppCopy }) {
+export function FinalGallery({
+  results,
+  preference,
+  copy,
+  onRefined,
+}: {
+  results: ResultInfo[];
+  preference: PhotoPreference;
+  copy: AppCopy;
+  onRefined: (result: Pick<ResultInfo, "frameId" | "url" | "score">) => void;
+}) {
   return (
     <section className="card fade-in">
       <header className="card-head">
@@ -26,15 +37,30 @@ export function FinalGallery({ results, copy }: { results: ResultInfo[]; copy: A
       </header>
       <div className="gallery">
         {results.map((result) => (
-          <ResultCard key={result.frameId} result={result} copy={copy} />
+          <ResultCard key={result.frameId} result={result} preference={preference} copy={copy} onRefined={onRefined} />
         ))}
       </div>
     </section>
   );
 }
 
-function ResultCard({ result, copy }: { result: ResultInfo; copy: AppCopy }) {
+function ResultCard({
+  result,
+  preference,
+  copy,
+  onRefined,
+}: {
+  result: ResultInfo;
+  preference: PhotoPreference;
+  copy: AppCopy;
+  onRefined: (result: Pick<ResultInfo, "frameId" | "url" | "score">) => void;
+}) {
   const [editing, setEditing] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  const [refining, setRefining] = useState(false);
+  const [feedbackError, setFeedbackError] = useState<string>();
+  const [feedbackStatus, setFeedbackStatus] = useState<string>();
   const [adjustments, setAdjustments] = useState<ImageAdjustments>(DEFAULT_ADJUSTMENTS);
   const imageRef = useRef<HTMLImageElement>(null);
   const filter = cssFilter(adjustments);
@@ -42,6 +68,29 @@ function ResultCard({ result, copy }: { result: ResultInfo; copy: AppCopy }) {
   const reset = () => setAdjustments(DEFAULT_ADJUSTMENTS);
   const update = (key: keyof ImageAdjustments, value: number) => {
     setAdjustments((current) => ({ ...current, [key]: value }));
+  };
+
+  useEffect(() => {
+    setAdjustments(DEFAULT_ADJUSTMENTS);
+  }, [result.url]);
+
+  const submitFeedback = async () => {
+    const instruction = feedback.trim();
+    if (!instruction || refining) return;
+
+    setRefining(true);
+    setFeedbackError(undefined);
+    setFeedbackStatus(undefined);
+    try {
+      const refined = await refineResult(result, preference, instruction);
+      onRefined({ frameId: result.frameId, url: refined.url, score: refined.score });
+      setFeedbackStatus(refined.usedLocalFallback ? copy.output.feedbackFallback : copy.output.feedbackApplied);
+      setFeedback("");
+    } catch (error) {
+      setFeedbackError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setRefining(false);
+    }
   };
 
   const save = () => {
@@ -87,6 +136,14 @@ function ResultCard({ result, copy }: { result: ResultInfo; copy: AppCopy }) {
             {editing ? copy.output.closeEdit : copy.output.edit}
           </button>
           <button
+            className="btn tiny"
+            type="button"
+            aria-expanded={feedbackOpen}
+            onClick={() => setFeedbackOpen((current) => !current)}
+          >
+            {copy.output.feedback}
+          </button>
+          <button
             className="save-result"
             type="button"
             aria-label={`${copy.output.save}: ${result.frameId}`}
@@ -103,6 +160,26 @@ function ResultCard({ result, copy }: { result: ResultInfo; copy: AppCopy }) {
           <AdjustmentControl label={copy.output.contrast} value={adjustments.contrast} onChange={(value) => update("contrast", value)} />
           <AdjustmentControl label={copy.output.saturation} value={adjustments.saturation} onChange={(value) => update("saturation", value)} />
           <button className="btn tiny" type="button" onClick={reset}>{copy.output.reset}</button>
+        </div>
+      )}
+      {feedbackOpen && (
+        <div className="result-feedback">
+          <span className="feedback-title">{copy.output.feedback}</span>
+          <p>{copy.output.feedbackHint}</p>
+          <textarea
+            value={feedback}
+            maxLength={600}
+            placeholder={copy.output.feedbackPlaceholder}
+            onChange={(event) => setFeedback(event.target.value)}
+          />
+          <div className="feedback-actions">
+            <button className="btn primary tiny" type="button" disabled={!feedback.trim() || refining} onClick={() => void submitFeedback()}>
+              {refining ? copy.output.refining : copy.output.refine}
+            </button>
+            <span className="mono muted">{feedback.length}/600</span>
+          </div>
+          {feedbackStatus && <p className="feedback-status">{feedbackStatus}</p>}
+          {feedbackError && <p className="feedback-error">{feedbackError}</p>}
         </div>
       )}
     </figure>

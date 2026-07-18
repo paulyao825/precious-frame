@@ -74,6 +74,7 @@ export type RunEvent =
   | { type: "loop2:round"; frameId: string; info: RoundInfo; imageUrl: string; recipe: Recipe }
   | { type: "loop2:done"; frameId: string; converged: boolean; bestScore: number; bestUrl: string; rounds: number }
   | { type: "run:done"; results: ResultInfo[] }
+  | { type: "result:refined"; frameId: string; url: string; score: number }
   | { type: "run:error"; message: string };
 
 export interface Loop1Round {
@@ -188,6 +189,17 @@ export function reduceEvent(state: RunState, e: RunEvent): RunState {
     }
     case "run:done":
       return { ...state, phase: "done", results: e.results };
+    case "result:refined": {
+      if (!state.results) return state;
+      const updated = state.results.map((result) =>
+        result.frameId === e.frameId ? { ...result, url: e.url, score: e.score } : result,
+      );
+      const bestScore = Math.max(...updated.map((result) => result.score));
+      return {
+        ...state,
+        results: updated.map((result) => ({ ...result, winner: result.score === bestScore })),
+      };
+    }
     case "run:error":
       return { ...state, phase: "error", error: e.message };
   }

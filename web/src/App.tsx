@@ -157,7 +157,14 @@ export default function App() {
             </section>
           )}
 
-          {state.results && <FinalGallery results={state.results} copy={text} />}
+          {state.results && (
+            <FinalGallery
+              results={state.results}
+              preference={state.config?.preference ?? "balanced"}
+              copy={text}
+              onRefined={(result) => dispatch({ type: "result:refined", ...result })}
+            />
+          )}
         </main>
       )}
 

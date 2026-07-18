@@ -26,6 +26,12 @@ export interface RunRequest {
   preference: PhotoPreference;
 }
 
+export interface FeedbackRefineRequest {
+  frame: Frame;
+  preference: PhotoPreference;
+  feedback: string;
+}
+
 export class RunManager {
   constructor(
     private readonly dataDir: string,
@@ -40,6 +46,23 @@ export class RunManager {
     } catch (err) {
       emit({ type: "run:error", message: String(err instanceof Error ? err.message : err) });
     }
+  }
+
+  async refineFromFeedback(req: FeedbackRefineRequest): Promise<{ url: string; score: number; usedLocalFallback: boolean }> {
+    const runId = randomUUID().slice(0, 8);
+    const runDir = path.join(this.dataDir, "feedback", runId);
+    const cfg = loadAppConfig();
+    const editor: Editor = new SharpLocalEditor(path.join(runDir, "edits"), this.urlFor);
+    let usedLocalFallback = cfg.judge.provider === "heuristic";
+    const judge = this.buildJudge(cfg, req.preference, (event) => {
+      if (event.type === "judge:fallback") usedLocalFallback = true;
+    }, req.feedback);
+    const result = await runLoop(
+      makeEditRefinementLoop(req.frame, editor, judge, { bar: cfg.loop.bar, maxRounds: cfg.loop.maxRounds }),
+      initialRefineState(),
+    );
+
+    return { url: result.best.uri, score: result.bestScore, usedLocalFallback };
   }
 
   private async execute(runId: string, req: RunRequest, emit: (event: RunEvent) => void): Promise<void> {
@@ -129,10 +152,11 @@ export class RunManager {
     cfg: AppConfig,
     preference: PhotoPreference,
     emit: (event: RunEvent) => void,
+    userFeedback?: string,
   ): VisionJudge {
     const local = new HeuristicVisionJudge(this.resolvePath);
     if (cfg.judge.provider === "heuristic") return local;
-    return new ResilientJudge(new LlmVisionJudge(this.resolvePath, cfg.judge, preference), local, (err) =>
+    return new ResilientJudge(new LlmVisionJudge(this.resolvePath, cfg.judge, preference, userFeedback), local, (err) =>
       emit({
         type: "judge:fallback",
         message: `AI edit judging failed (${String(err).slice(0, 180)}) - continuing with local pixel scoring`,

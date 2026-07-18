@@ -23,6 +23,13 @@ test("edit judge prompt preserves intentional photographic choices", () => {
   assert.match(prompt, /do not neutralize an intentional warm or cool atmosphere/i);
 });
 
+test("edit judge prompt prioritizes supported user feedback", () => {
+  const prompt = buildEditJudgePrompt("people-emotion", "Crop tighter around the people but keep their hands.");
+  assert.match(prompt, /Crop tighter around the people but keep their hands/);
+  assert.match(prompt, /prioritize this direction/i);
+  assert.match(prompt, /matching actionable hint/i);
+});
+
 test("LlmVisionJudge sends the original and edited image to Kimi", async () => {
   const dir = await mkdtemp(path.join(os.tmpdir(), "precious-frame-judge-"));
   const sourcePath = path.join(dir, "source.jpg");
