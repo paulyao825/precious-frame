@@ -58,7 +58,7 @@ export default function App() {
   return (
     <div className="page" id="top">
       <header className="topbar">
-        <a className="brand" href="#top" aria-label={text.homeAria}>
+        <a className="brand" href="/" aria-label={text.homeAria}>
           <span className="brand-word">Precious Frame</span><span className="brand-stop">.</span>
         </a>
         {isLanding ? (
