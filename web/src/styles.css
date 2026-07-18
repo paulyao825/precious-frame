@@ -576,12 +576,16 @@ h3 {
 }
 
 .news-strip span {
+  display: flex;
+  align-items: center;
   padding: 15px 18px;
   background: var(--accent);
   color: #fff8ec;
-  font-family: var(--mono);
-  font-size: 10px;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-style: normal;
   font-weight: 700;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
