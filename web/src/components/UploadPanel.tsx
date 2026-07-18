@@ -9,11 +9,9 @@ export interface RunOptions {
 export function UploadPanel({
   busy,
   onRunFile,
-  onRunSample,
 }: {
   busy: boolean;
   onRunFile: (file: File, opts: RunOptions) => void;
-  onRunSample: (opts: RunOptions) => void;
 }) {
   const [n, setN] = useState(3);
   const [backend, setBackend] = useState<"local" | "zero">("local");
@@ -25,7 +23,13 @@ export function UploadPanel({
   const opts: RunOptions = { n, editorBackend: backend, flourish };
 
   return (
-    <section className="card upload-panel fade-in">
+    <section className="card upload-panel fade-in" id="upload">
+      <header className="upload-head">
+        <span className="eyebrow">Start a run</span>
+        <h2>Upload your video</h2>
+        <p className="muted">Loopic works best with short reels, clips, and highlight videos.</p>
+      </header>
+
       <div
         className={`dropzone ${dragging ? "dragging" : ""} ${file ? "has-file" : ""}`}
         onClick={() => inputRef.current?.click()}
@@ -88,9 +92,6 @@ export function UploadPanel({
       <div className="actions">
         <button className="btn primary" disabled={!file || busy} onClick={() => file && onRunFile(file, opts)}>
           {busy ? "working…" : "Run the loops"}
-        </button>
-        <button className="btn ghost" disabled={busy} onClick={() => onRunSample(opts)}>
-          Use sample reel
         </button>
       </div>
     </section>
