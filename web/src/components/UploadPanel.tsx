@@ -15,7 +15,7 @@ export function UploadPanel({
 }) {
   const [n, setN] = useState(3);
   const [backend, setBackend] = useState<"local" | "zero">("local");
-  const [flourish, setFlourish] = useState(true);
+  const [flourish, setFlourish] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);

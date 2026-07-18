@@ -6,6 +6,8 @@ import { loadAppConfig, type AppConfig } from "../appConfig.js";
 import { runLoop, type LoopRound } from "../core/loop.js";
 import { extractFrames } from "../media/ffmpeg.js";
 import { RealFrameScorer } from "../backends/frameScorer.real.js";
+import { LlmFrameScorer } from "../backends/frameScorer.llm.js";
+import type { FrameScorer } from "../backends/frameScorer.js";
 import { SharpLocalEditor, ZeroEditor } from "../backends/editor.sharp.js";
 import type { Editor } from "../backends/editor.js";
 import { ResilientJudge, type VisionJudge } from "../backends/judge.js";
@@ -93,6 +95,7 @@ export class RunManager {
       n: req.n,
       editorBackend: req.editorBackend,
       flourish: req.flourish,
+      selector: cfg.judge.provider === "heuristic" ? "heuristic-pixels" : `${cfg.judge.provider}:${cfg.judge.model}`,
       judge: cfg.judge.provider === "heuristic" ? "heuristic-pixels" : `${cfg.judge.provider}:${cfg.judge.model}`,
       judgeNote: cfg.judge.note,
       bar: cfg.loop.bar,
@@ -139,7 +142,9 @@ export class RunManager {
     emit({ type: "extract:done", frames: frameInfos });
 
     // ── Loop 1: frame selection ─────────────────────────────────────
-    const scorer = new RealFrameScorer();
+    const localScorer = new RealFrameScorer();
+    const scorer: FrameScorer = this.buildFrameScorer(cfg, localScorer, emit);
+    await scorer.prepare?.(frames);
     const selection = await compute.run("frame-selection", () =>
       runLoop(makeFrameSelectionLoop(frames, scorer, { bar: 8.2 }), initialSelectionState(req.n), {
         onRound: (r) =>
@@ -226,6 +231,20 @@ export class RunManager {
       emit({
         type: "judge:fallback",
         message: `${cfg.judge.provider} judge failed (${String(err).slice(0, 180)}) — continuing with pixel heuristics`,
+      }),
+    );
+  }
+
+  private buildFrameScorer(
+    cfg: AppConfig,
+    local: FrameScorer,
+    emit: (e: RunEvent) => void,
+  ): FrameScorer {
+    if (!["akashml", "openai", "gemini", "openrouter"].includes(cfg.judge.provider)) return local;
+    return new LlmFrameScorer(local, cfg.judge, (err) =>
+      emit({
+        type: "judge:fallback",
+        message: `${cfg.judge.provider} frame selection failed (${String(err).slice(0, 180)}) — continuing with pixel scoring`,
       }),
     );
   }

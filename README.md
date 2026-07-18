@@ -10,7 +10,8 @@ attract real-world clip photos: the actual moments already inside your videos.
 The current prototype focuses on discovering and improving strong photo moments:
 
 - frame extraction from raw video
-- fast visual scoring for sharpness, exposure, contrast, color, and interest
+- multimodal frame selection for composition, real moments, and storytelling
+- local visual scoring for sharpness, exposure, contrast, color, and interest
 - looped edit refinement with named corrections
 - visible round history, score changes, and final output gallery
 - AWS Bedrock judge support and optional S3 image hosting
@@ -37,6 +38,25 @@ Open the app and upload a video file to start a run.
 Extra:
 
 - `npm run demo` - all-mock console demo
+- `npm test` - unit tests for model-output parsing and score weighting
+
+## Required setup
+
+Only one external service is required for AI frame selection:
+
+1. Create an AkashML account and generate a new key in **Settings -> API Keys**.
+2. Copy `.env.example` to `.env`.
+3. Set `AKASHML_API_KEY` in `.env`. Never commit or paste the value into chat.
+4. Keep `judge.provider` as `"akashml"` in `precious-frame.config.json`.
+
+AkashML API keys use the `akml-...` format. An Akash Console deployment key is
+not an inference key and cannot call a vision model. The configured default is
+`Qwen/Qwen3.5-35B-A3B`, a multimodal model. You can override it with
+`JUDGE_MODEL` after confirming another model reports image input support in
+`GET https://api.akashml.com/v1/models`.
+
+Without an AkashML key, the full app still runs using local pixel scoring and
+shows the fallback in the infrastructure panel.
 
 ## Configuration - `precious-frame.config.json`
 
@@ -46,8 +66,8 @@ server.
 ```jsonc
 {
   "judge": {
-    "provider": "heuristic",   // heuristic | openai | gemini | anthropic | openrouter | bedrock
-    "model": "",               // empty = provider default
+    "provider": "akashml",     // akashml | heuristic | openai | gemini | anthropic | openrouter | bedrock
+    "model": "Qwen/Qwen3.5-35B-A3B",
     "apiKeyEnv": "",           // empty = provider default env var
     "baseUrl": ""              // override for proxies / compatible endpoints
   },
@@ -65,12 +85,31 @@ server.
 }
 ```
 
-Put API keys in `.env`. Missing keys or provider errors degrade to the local
-pixel-heuristic judge, and the UI shows the fallback reason.
+Put API keys in `.env`. Missing keys or provider errors degrade to local pixel
+scoring, and the UI shows the fallback reason.
+
+## Technical stack audit
+
+| Component | Needed now | Setup | Simpler default |
+| --- | --- | --- | --- |
+| Node.js 22 + TypeScript | Yes | Install Node.js, then `npm install` | Existing stack |
+| ffmpeg-static | Yes | Installed by npm | No system FFmpeg install |
+| Sharp | Yes | Installed by npm | Local crop, color, and sharpen |
+| AkashML vision API | Yes for AI selection | New `AKASHML_API_KEY` in `.env` or host secrets | Falls back to local scorer |
+| Container host | Yes for production API | Deploy the included Dockerfile | Railway/Render is easier; Akash fits the hackathon |
+| Vercel | Frontend only | Set `VITE_API_BASE` to the container API URL | Keep the existing Vercel site |
+| AWS Bedrock / S3 | No | AWS credentials and optional bucket | Use AkashML + local run storage |
+| Zero.xyz | No | Login, funded wallet, explicit budget | Use local Sharp; zero spend by default |
+
+The API accepts videos up to 300MB and keeps an SSE connection open while
+FFmpeg and the model run. Vercel Functions cap request bodies at 4.5MB, so the
+production API must run as the included long-lived container. Vercel remains a
+good static frontend host once `VITE_API_BASE` points to that container.
 
 ## Built With
 
 - Akash
+- AkashML
 - Amazon Web Services
 - Cursor
 - TypeScript
@@ -124,10 +163,12 @@ Two product loops plug into it:
 
 | Loop | Goal | Output |
 | --- | --- | --- |
-| Loop 1 | Select the strongest and most varied frames | Candidate photos |
+| Loop 1 | Multimodal aesthetic score + pixel quality + diversity | Candidate photos |
 | Loop 2 | Improve each chosen frame through bounded edits | Refined photos |
 
-The edit loop changes one parameter at a time: crop, exposure, contrast,
+Loop 1 sends six extracted frames per model request, combines the model's
+aesthetic score (55%) with local sharpness, exposure, and visual activity, then
+removes near-duplicates. The edit loop changes one parameter at a time: crop, exposure, contrast,
 saturation, temperature, or sharpening. A judge scores concrete visual axes and
 returns directional hints such as `brighten`, `tighten`, or `warmer`.
 

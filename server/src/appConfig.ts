@@ -6,7 +6,7 @@ import { hasAwsCredentials } from "./backends/aws.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "../..");
 
-export type JudgeProvider = "heuristic" | "openai" | "gemini" | "anthropic" | "openrouter" | "bedrock";
+export type JudgeProvider = "heuristic" | "akashml" | "openai" | "gemini" | "anthropic" | "openrouter" | "bedrock";
 
 export interface JudgeConfig {
   provider: JudgeProvider;
@@ -38,6 +38,11 @@ export interface AppConfig {
 }
 
 const PROVIDER_DEFAULTS: Record<Exclude<JudgeProvider, "heuristic" | "bedrock">, { model: string; keyEnv: string; baseUrl: string }> = {
+  akashml: {
+    model: "Qwen/Qwen3.5-35B-A3B",
+    keyEnv: "AKASHML_API_KEY",
+    baseUrl: "https://api.akashml.com/v1",
+  },
   openai: {
     model: "gpt-4o-mini",
     keyEnv: "OPENAI_API_KEY",

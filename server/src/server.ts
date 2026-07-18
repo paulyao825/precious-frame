@@ -7,7 +7,6 @@ import express from "express";
 import cors from "cors";
 import multer from "multer";
 import { RunManager } from "./api/orchestrator.js";
-import { generateSampleVideo } from "./media/ffmpeg.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_DATA_DIR = process.env.VERCEL ? "/tmp/precious-frame-data" : path.resolve(__dirname, "../data");
@@ -44,17 +43,6 @@ app.use("/media", express.static(DATA_DIR, { maxAge: "1y", immutable: true }));
 app.post("/api/upload", upload.single("video"), (req, res) => {
   if (!req.file) return res.status(400).json({ error: "no video file" });
   res.json({ videoId: req.file.filename });
-});
-
-app.post("/api/sample", async (_req, res) => {
-  try {
-    const videoId = "sample.mp4";
-    const out = path.join(DATA_DIR, "uploads", videoId);
-    if (!existsSync(out)) await generateSampleVideo(out);
-    res.json({ videoId });
-  } catch (err) {
-    res.status(500).json({ error: String(err) });
-  }
 });
 
 app.post("/api/run", (req, res) => {

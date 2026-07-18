@@ -47,10 +47,14 @@ export interface FrameQuality {
   sharpness: number; // 0..1
   exposure: number;  // 0..1 (1 = well exposed, no clipping)
   interest: number;  // 0..1 (edge energy / something happening)
+  /** Vision-model score for composition, human moment, and storytelling. */
+  aesthetic?: number; // 0..1
 }
 
 export function frameQualityScore(q: FrameQuality): number {
-  // Weighted blend, 0..10.
+  if (q.aesthetic !== undefined) {
+    return 10 * (0.2 * q.sharpness + 0.15 * q.exposure + 0.1 * q.interest + 0.55 * q.aesthetic);
+  }
   return 10 * (0.45 * q.sharpness + 0.35 * q.exposure + 0.2 * q.interest);
 }
 

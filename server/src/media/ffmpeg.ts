@@ -51,29 +51,3 @@ export async function extractFrames(
   const files = (await readdir(outDir)).filter((f) => f.endsWith(".jpg")).sort();
   return files.map((f, i) => ({ path: path.join(outDir, f), t: Math.round((i / fps) * 100) / 100 }));
 }
-
-/**
- * Generate a sample "vacation reel" so the demo needs no real footage:
- * three visually distinct scenes with deliberately bad exposure —
- * material the loop can visibly fix.
- */
-export async function generateSampleVideo(outPath: string): Promise<string> {
-  await mkdir(path.dirname(outPath), { recursive: true });
-  await run([
-    "-y",
-    "-f", "lavfi", "-i", "testsrc2=duration=4:size=640x360:rate=30",
-    "-f", "lavfi", "-i", "mandelbrot=size=640x360:rate=30",
-    "-f", "lavfi", "-i", "gradients=duration=4:size=640x360:rate=30:speed=0.4",
-    "-filter_complex",
-    [
-      "[0:v]eq=brightness=-0.28:saturation=0.9[a]", // scene 1: underexposed
-      "[1:v]trim=duration=4,eq=brightness=0.18[b]", //  scene 2: overexposed mandelbrot
-      "[2:v]eq=contrast=1.1[c]",
-      "[a][b][c]concat=n=3:v=1:a=0[out]",
-    ].join(";"),
-    "-map", "[out]",
-    "-pix_fmt", "yuv420p",
-    outPath,
-  ]);
-  return outPath;
-}

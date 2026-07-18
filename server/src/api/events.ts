@@ -33,6 +33,7 @@ export type RunEvent =
       n: number;
       editorBackend: EditorBackend;
       flourish: boolean;
+      selector: string;
       judge: string;
       judgeNote?: string;
       bar: number;

@@ -20,6 +20,18 @@ export function InfraPanel({ state }: { state: RunState }) {
       {cfg && (
         <div className="infra-row">
           <div className="infra-label">
+            Frame selection
+            <span className={`pill ${cfg.selector.startsWith("heuristic") ? "close" : "pass"}`}>
+              {cfg.selector.startsWith("heuristic") ? "local" : "vision AI"}
+            </span>
+          </div>
+          <div className="infra-note muted">{cfg.selector}</div>
+        </div>
+      )}
+
+      {cfg && (
+        <div className="infra-row">
+          <div className="infra-label">
             Compute
             <span className={`pill ${cfg.compute === "akash" ? "pass" : "close"}`}>
               {cfg.compute === "akash" ? "akash" : "local"}

@@ -7,6 +7,8 @@ import type { MockWorld } from "../mock/world.js";
  * Real impl (step 2): laplacian variance + face detector.
  */
 export interface FrameScorer {
+  /** Optional one-time batch preparation for remote vision scorers. */
+  prepare?(frames: Frame[]): Promise<void>;
   score(frame: Frame): Promise<FrameQuality>;
   /** Similarity 0..1 between two frames (1 = near-identical). */
   similarity(a: Frame, b: Frame): Promise<number>;

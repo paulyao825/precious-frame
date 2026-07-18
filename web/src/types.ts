@@ -70,6 +70,7 @@ export type RunEvent =
       n: number;
       editorBackend: "local" | "zero";
       flourish: boolean;
+      selector: string;
       judge: string;
       judgeNote?: string;
       bar: number;
@@ -119,6 +120,7 @@ export interface RunState {
     n: number;
     editorBackend: "local" | "zero";
     flourish: boolean;
+    selector: string;
     judge: string;
     judgeNote?: string;
     bar: number;
@@ -159,6 +161,7 @@ export function reduceEvent(state: RunState, e: RunEvent): RunState {
           n: e.n,
           editorBackend: e.editorBackend,
           flourish: e.flourish,
+          selector: e.selector,
           judge: e.judge,
           judgeNote: e.judgeNote,
           bar: e.bar,

@@ -37,13 +37,6 @@ export async function uploadVideo(file: File): Promise<string> {
   return videoId;
 }
 
-export async function requestSampleVideo(): Promise<string> {
-  const res = await fetch(api("/api/sample"), { method: "POST" });
-  if (!res.ok) throw new Error(`sample generation failed: ${await res.text()}`);
-  const { videoId } = (await res.json()) as { videoId: string };
-  return videoId;
-}
-
 export async function startRun(opts: {
   videoId: string;
   n: number;

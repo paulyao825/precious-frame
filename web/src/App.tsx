@@ -373,7 +373,8 @@ function LandingPage({ busy, onRunFile }: { busy: boolean; onRunFile: (file: Fil
           <h2>A visible, inspectable AI workflow.</h2>
         </header>
         <div className="stack-grid">
-          <article><strong>AWS</strong><span>Bedrock vision judging and optional S3 image hosting</span></article>
+          <article><strong>AkashML</strong><span>Multimodal Qwen selects frames and judges edits</span></article>
+          <article><strong>AWS</strong><span>Optional Bedrock judging and S3 image hosting</span></article>
           <article><strong>Akash</strong><span>Container-ready distributed compute deployment</span></article>
           <article><strong>Zero.xyz</strong><span>Capability discovery and optional paid flourish pass</span></article>
           <article><strong>TypeScript</strong><span>One streamed product workflow from API to interface</span></article>

@@ -1,9 +1,9 @@
 {
   "$comment": "Precious Frame runtime config \u2014 reloaded on every run, no restart needed.",
   "judge": {
-    "$comment": "provider: heuristic | openai | gemini | anthropic | openrouter | bedrock. apiKeyEnv defaults per provider (OPENAI_API_KEY, GEMINI_API_KEY, ANTHROPIC_API_KEY, OPENROUTER_API_KEY) \u2014 put keys in .env. bedrock uses AWS credentials (env or ~/.aws) instead of an API key; default model amazon.nova-lite-v1:0. Missing key falls back to heuristic.",
-    "provider": "openai",
-    "model": "",
+    "$comment": "provider: heuristic | akashml | openai | gemini | anthropic | openrouter | bedrock. Put keys in .env. Missing keys or API errors fall back to local pixel scoring.",
+    "provider": "akashml",
+    "model": "Qwen/Qwen3.5-35B-A3B",
     "apiKeyEnv": "",
     "baseUrl": ""
   },
@@ -20,7 +20,7 @@
   "zero": {
     "$comment": "Zero.xyz \u2014 capability discovery is free and always on. Paid invocation needs `zero auth login` + funded wallet; set maxPayUsdc > 0 to allow spending.",
     "enabled": true,
-    "maxPayUsdc": 0.15,
+    "maxPayUsdc": 0,
     "flourishQuery": "image upscale enhance super-resolution photo",
     "editQuery": "photo image editing crop resize exposure"
   }
