@@ -1,6 +1,7 @@
 import type { RunState } from "../types";
+import type { AppCopy } from "../i18n";
 
-export function InfraPanel({ state }: { state: RunState }) {
+export function InfraPanel({ state, copy }: { state: RunState; copy: AppCopy }) {
   const cfg = state.config;
   if (!cfg) return null;
 
@@ -10,33 +11,33 @@ export function InfraPanel({ state }: { state: RunState }) {
       <header className="card-head">
         <div>
           <span className="loop-tag">STACK</span>
-          <h2>Processing stack</h2>
+          <h2>{copy.infra.stack}</h2>
         </div>
       </header>
 
       <div className="infra-row">
         <div className="infra-label">
-          Frame intelligence
+          {copy.infra.frameIntelligence}
           <span className={`pill ${usesVisionApi ? "pass" : "close"}`}>
-            {usesVisionApi ? "vision AI" : "local fallback"}
+            {usesVisionApi ? copy.labels.visionAi : copy.labels.localFallback}
           </span>
         </div>
         <div className="infra-note muted">{cfg.selector}</div>
       </div>
 
       <div className="infra-row">
-        <div className="infra-label">Photo preference<span className="pill pass">selected</span></div>
+        <div className="infra-label">{copy.infra.preference}<span className="pill pass">{copy.infra.selected}</span></div>
         <div className="infra-note muted">{cfg.preferenceLabel}</div>
       </div>
 
       <div className="infra-row">
-        <div className="infra-label">Video and image processing<span className="pill pass">local</span></div>
-        <div className="infra-note muted">The browser extracts real frames; Sharp applies crop, color, and detail edits.</div>
+        <div className="infra-label">{copy.infra.processing}<span className="pill pass">{copy.infra.local}</span></div>
+        <div className="infra-note muted">{copy.infra.browserNote}</div>
       </div>
 
       <div className="infra-row">
-        <div className="infra-label">Application API<span className="pill pass">standard</span></div>
-        <div className="infra-note muted">Express processes frames and streams the complete run over one SSE request.</div>
+        <div className="infra-label">{copy.infra.api}<span className="pill pass">{copy.infra.standard}</span></div>
+        <div className="infra-note muted">{copy.infra.apiNote}</div>
       </div>
     </section>
   );

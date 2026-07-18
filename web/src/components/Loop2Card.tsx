@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
 import type { FrameInfo, Loop2Round, Loop2State } from "../types";
 import { AxisBars, ScorePill, Sparkline, Spinner } from "./bits";
+import type { AppCopy } from "../i18n";
 
 export function Loop2Card({
   frame,
   loop,
   bar = 7.5,
+  copy,
 }: {
   frame: FrameInfo | undefined;
   loop: Loop2State;
   bar?: number;
+  copy: AppCopy;
 }) {
   const rounds = loop.rounds;
   const [viewIdx, setViewIdx] = useState(rounds.length - 1);
@@ -25,7 +28,7 @@ export function Loop2Card({
   if (!view || !first) {
     return (
       <div className="card loop2-card">
-        <Spinner label={`preparing ${loop.frameId}…`} />
+        <Spinner label={`${copy.loop2.preparing} ${loop.frameId}…`} />
       </div>
     );
   }
@@ -40,35 +43,35 @@ export function Loop2Card({
           <Sparkline scores={rounds.map((r) => r.info.score)} bar={bar} />
           {loop.done ? (
             <span className={`status-chip ${loop.done.converged ? "ok" : "cap"}`}>
-              {loop.done.converged ? "cleared bar" : "round cap"} · {first.info.score.toFixed(1)} →{" "}
+              {loop.done.converged ? copy.loop2.clearedBar : copy.loop2.roundCap} · {first.info.score.toFixed(1)} →{" "}
               {loop.done.bestScore.toFixed(1)}
             </span>
           ) : (
-            <Spinner label={`round ${rounds.length}…`} />
+            <Spinner label={`${copy.loop2.round} ${rounds.length}…`} />
           )}
         </div>
       </header>
 
       <div className="compare">
         <figure>
-          <img src={first.imageUrl} alt="round 1" />
+          <img src={first.imageUrl} alt={`${copy.loop2.round} 1`} />
           <figcaption>
-            round 1 <ScorePill score={first.info.score} bar={bar} />
+            {copy.loop2.round} 1 <ScorePill score={first.info.score} bar={bar} />
           </figcaption>
         </figure>
         <div className="compare-arrow">→</div>
         <figure>
-          <img src={view.imageUrl} alt={`round ${view.info.round}`} />
+          <img src={view.imageUrl} alt={`${copy.loop2.round} ${view.info.round}`} />
           <figcaption>
-            round {view.info.round} <ScorePill score={view.info.score} bar={bar} />
-            {view.info.cached && <span className="cached-chip">cached</span>}
+            {copy.loop2.round} {view.info.round} <ScorePill score={view.info.score} bar={bar} />
+            {view.info.cached && <span className="cached-chip">{copy.loop2.cached}</span>}
           </figcaption>
         </figure>
       </div>
 
       {rounds.length > 1 && (
         <div className="scrubber">
-          <span className="mono muted">scrub rounds</span>
+          <span className="mono muted">{copy.loop2.scrub}</span>
           <input
             type="range"
             min={0}
