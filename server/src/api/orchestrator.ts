@@ -75,7 +75,7 @@ export class RunManager {
     const cfg = loadAppConfig();
     const editor: Editor = new SharpLocalEditor(path.join(runDir, "edits"), this.urlFor);
     const judge = this.buildJudge(cfg, emit);
-    const visionLabel = cfg.judge.provider === "qwen" ? `Qwen:${cfg.judge.model}` : "local pixel scoring";
+    const visionLabel = cfg.judge.provider === "glm" ? `GLM:${cfg.judge.model}` : "local pixel scoring";
 
     emit({
       type: "run:init",
@@ -162,7 +162,7 @@ export class RunManager {
     return new ResilientJudge(new LlmVisionJudge(this.resolvePath, cfg.judge), local, (err) =>
       emit({
         type: "judge:fallback",
-        message: `Qwen edit judging failed (${String(err).slice(0, 180)}) - continuing with local pixel scoring`,
+        message: `GLM edit judging failed (${String(err).slice(0, 180)}) - continuing with local pixel scoring`,
       }),
     );
   }
@@ -176,7 +176,7 @@ export class RunManager {
     return new LlmFrameScorer(local, cfg.judge, (err) =>
       emit({
         type: "judge:fallback",
-        message: `Qwen frame selection failed (${String(err).slice(0, 180)}) - continuing with local pixel scoring`,
+        message: `GLM frame selection failed (${String(err).slice(0, 180)}) - continuing with local pixel scoring`,
       }),
     );
   }

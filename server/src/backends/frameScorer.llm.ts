@@ -76,6 +76,7 @@ export class LlmFrameScorer implements FrameScorer {
         model: this.cfg.model,
         max_tokens: 900,
         temperature: 0,
+        thinking: { type: "disabled" },
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content },
@@ -83,7 +84,7 @@ export class LlmFrameScorer implements FrameScorer {
       }),
     });
     if (!res.ok) {
-      throw new Error(`Qwen frame scorer failed: ${res.status} ${(await res.text()).slice(0, 240)}`);
+      throw new Error(`GLM frame scorer failed: ${res.status} ${(await res.text()).slice(0, 240)}`);
     }
     const body = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
     return parseFrameScores(body.choices?.[0]?.message?.content ?? "", frames.map((f) => f.id));

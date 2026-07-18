@@ -186,7 +186,7 @@ export default function App() {
           <strong>Precious Frame.</strong>
           <span>AI visual storytelling assistant</span>
         </div>
-        <span>Built with React, Express, TypeScript, FFmpeg, Sharp, and Qwen3-VL.</span>
+        <span>Built with React, Express, TypeScript, FFmpeg, Sharp, and GLM Vision.</span>
         <a href={GITHUB_URL} target="_blank" rel="noreferrer">Source on GitHub ↗</a>
       </footer>
     </div>
@@ -362,14 +362,14 @@ function LandingPage({ busy, onRunFile }: { busy: boolean; onRunFile: (file: Fil
           <h2>A visible, inspectable AI workflow.</h2>
         </header>
         <div className="stack-grid">
-          <article><strong>Qwen3-VL</strong><span>Multimodal frame selection and concrete edit judgment</span></article>
+          <article><strong>GLM-4.6V</strong><span>Multimodal frame selection and concrete edit judgment</span></article>
           <article><strong>FFmpeg</strong><span>Reliable frame extraction from uploaded video</span></article>
           <article><strong>Sharp</strong><span>Local crop, color, exposure, and detail adjustments</span></article>
           <article><strong>React + Express</strong><span>Upload interface, progress stream, and results</span></article>
           <article><strong>TypeScript</strong><span>One typed workflow from API to interface</span></article>
         </div>
         <p className="stack-note">
-          Qwen-VL is the only external processing service. Video extraction and image edits run locally, and the workflow
+          GLM Vision is the only external processing service. Video extraction and image edits run locally, and the workflow
           falls back to local image analysis when the vision API is unavailable.
         </p>
       </section>

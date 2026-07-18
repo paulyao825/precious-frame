@@ -29,7 +29,7 @@ For each axis give a one-line reason and ONE hint from: ${JUDGE_HINTS.join(", ")
 Hints are directions for the NEXT single edit step (e.g. "shift-right" moves the crop window right). The loop picks magnitudes, not you. Use "none" when the axis needs nothing.
 Respond ONLY with JSON: {"cropFraming":{"score":n,"reason":"...","hint":"..."},"exposure":{...},"contrast":{...},"color":{...},"whiteBalance":{...},"sharpness":{...}}`;
 
-/** Qwen-VL judge through Model Studio's OpenAI-compatible chat completions API. */
+/** GLM vision judge through Z.ai's OpenAI-compatible chat completions API. */
 export class LlmVisionJudge implements VisionJudge {
   constructor(
     private readonly resolvePath: (uri: string) => string,
@@ -41,10 +41,10 @@ export class LlmVisionJudge implements VisionJudge {
     const b64 = jpeg.toString("base64");
     const userText = `Applied recipe: ${JSON.stringify(image.recipe)}. Judge the image.`;
 
-    return parseCritique(await this.callQwen(b64, userText));
+    return parseCritique(await this.callGlm(b64, userText));
   }
 
-  private async callQwen(b64: string, userText: string): Promise<string> {
+  private async callGlm(b64: string, userText: string): Promise<string> {
     const res = await fetch(`${this.cfg.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
@@ -55,6 +55,7 @@ export class LlmVisionJudge implements VisionJudge {
         model: this.cfg.model,
         max_tokens: 700,
         temperature: 0,
+        thinking: { type: "disabled" },
         messages: [
           { role: "system", content: JUDGE_SYSTEM_PROMPT },
           {
@@ -67,7 +68,7 @@ export class LlmVisionJudge implements VisionJudge {
         ],
       }),
     });
-    if (!res.ok) throw new Error(`Qwen judge failed: ${res.status} ${(await res.text()).slice(0, 300)}`);
+    if (!res.ok) throw new Error(`GLM judge failed: ${res.status} ${(await res.text()).slice(0, 300)}`);
     const body = (await res.json()) as { choices: Array<{ message: { content: string } }> };
     return body.choices[0]?.message.content ?? "";
   }

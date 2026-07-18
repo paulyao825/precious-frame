@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "../..");
 
-export type JudgeProvider = "qwen" | "heuristic";
+export type JudgeProvider = "glm" | "heuristic";
 
 export interface JudgeConfig {
   provider: JudgeProvider;
@@ -49,24 +49,24 @@ export function loadAppConfig(): AppConfig {
 
   const judgeRaw = (raw.judge ?? {}) as Record<string, string>;
   const loopRaw = (raw.loop ?? {}) as Record<string, number>;
-  const requestedProvider = process.env.VISION_PROVIDER ?? judgeRaw.provider ?? "qwen";
+  const requestedProvider = process.env.VISION_PROVIDER ?? judgeRaw.provider ?? "glm";
   let judge: JudgeConfig = { provider: "heuristic", model: "pixel-stats", baseUrl: "" };
 
-  if (requestedProvider === "qwen") {
-    const apiKey = process.env.DASHSCOPE_API_KEY;
+  if (requestedProvider === "glm") {
+    const apiKey = process.env.GLM_API_KEY;
     if (apiKey) {
       judge = {
-        provider: "qwen",
-        model: process.env.VISION_MODEL ?? judgeRaw.model ?? "qwen3-vl-plus",
+        provider: "glm",
+        model: process.env.VISION_MODEL ?? judgeRaw.model ?? "glm-4.6v-flash",
         apiKey,
         baseUrl: (
           process.env.VISION_BASE_URL ??
           judgeRaw.baseUrl ??
-          "https://dashscope-us.aliyuncs.com/compatible-mode/v1"
+          "https://open.bigmodel.cn/api/paas/v4"
         ).replace(/\/+$/, ""),
       };
     } else {
-      judge.note = "DASHSCOPE_API_KEY is not set - using local pixel scoring";
+      judge.note = "GLM_API_KEY is not set - using local pixel scoring";
     }
   } else if (requestedProvider !== "heuristic") {
     judge.note = `unknown vision provider "${requestedProvider}" - using local pixel scoring`;

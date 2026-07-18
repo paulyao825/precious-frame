@@ -67,7 +67,7 @@ export function UploadPanel({
           <input type="range" min={1} max={6} value={n} onChange={(e) => setN(Number(e.target.value))} />
         </label>
 
-        <p className="muted">Frames are selected by Qwen-VL and refined locally with Sharp.</p>
+        <p className="muted">Frames are selected by GLM Vision and refined locally with Sharp.</p>
       </div>
 
       <div className="actions">

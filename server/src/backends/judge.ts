@@ -4,7 +4,7 @@ import type { EditedImage } from "../domain/types.js";
 /**
  * Vision-model judge for Loop 2. Scores on CONCRETE axes only —
  * structured output, never vague beauty. Implementations: pixel
- * local pixel heuristics or the configured Qwen-VL model.
+ * local pixel heuristics or the configured GLM vision model.
  */
 export interface VisionJudge {
   critique(image: EditedImage): Promise<Critique>;
