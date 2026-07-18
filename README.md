@@ -29,8 +29,7 @@ npm run dev
 npm run build && npm start
 ```
 
-Open the app, click **Use sample reel** to generate a test video, or upload any
-video file.
+Open the app and upload a video file to start a run.
 
 Extra:
 
