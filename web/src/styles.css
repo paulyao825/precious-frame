@@ -223,11 +223,6 @@ h3 {
 }
 
 .hero {
-  display: grid;
-  grid-template-columns: minmax(0, 860px) minmax(220px, 1fr);
-  gap: 56px;
-  align-items: center;
-  min-height: 620px;
   padding: 64px 0 56px;
   border-bottom: 1px solid var(--rule);
 }
@@ -236,17 +231,27 @@ h3 {
   max-width: 860px;
 }
 
-.hero-side-cta {
-  display: flex;
-  justify-content: flex-end;
+.hero-actions {
+  margin-top: 4px;
+  align-items: stretch;
 }
 
 .hero-catch {
-  width: min(100%, 280px);
-  min-height: 78px;
-  padding: 18px 24px;
-  font-size: 13px;
-  text-align: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 12px 26px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+
+.hero-catch .btn-arrow {
+  font-size: 15px;
+  line-height: 1;
+  transition: transform 0.18s ease;
+}
+
+.hero-catch:hover:not(:disabled) .btn-arrow {
+  transform: translateY(3px);
 }
 
 .kicker,
@@ -1445,13 +1450,7 @@ h3 {
   }
 
   .hero {
-    grid-template-columns: 1fr;
-    gap: 42px;
     padding-top: 54px;
-  }
-
-  .hero-side-cta {
-    justify-content: flex-start;
   }
 
   .hero-copy h1 {

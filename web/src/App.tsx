@@ -188,6 +188,10 @@ function LandingPage({ busy, onRunFile, copy }: { busy: boolean; onRunFile: (fil
           <p className="hero-slogan">{landing.slogan}</p>
           <p className="hero-dek">{landing.dek}</p>
           <div className="hero-actions">
+            <a className="btn primary hero-catch" href="#upload">
+              <span>{landing.startVideo}</span>
+              <span className="btn-arrow" aria-hidden="true">↓</span>
+            </a>
             <a className="btn ghost" href="#how-it-works">{landing.readHow}</a>
           </div>
           <div className="hero-facts" aria-label={landing.capabilitiesAria}>
@@ -195,9 +199,6 @@ function LandingPage({ busy, onRunFile, copy }: { busy: boolean; onRunFile: (fil
               <div key={capability}><strong>{String(index + 1).padStart(2, "0")}</strong><span>{capability}</span></div>
             ))}
           </div>
-        </div>
-        <div className="hero-side-cta fade-in">
-          <a className="btn primary hero-catch" href="#upload">{landing.startVideo}</a>
         </div>
       </section>
 
