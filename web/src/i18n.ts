@@ -9,6 +9,7 @@ export interface AppCopy {
   theme: { dark: string; light: string; switchToDark: string; switchToLight: string };
   labels: { vision: string; judge: string; newRun: string; ai: string; localFallback: string; visionAi: string };
   phase: { uploading: string; extracting: string; loop1: string; loop2: string };
+  progress: { heading: string; steps: [string, string, string]; hint: string };
   banners: { vision: string };
   pipeline: { loop2Title: string; loop2Note: string; loop2Tag: string };
   footer: { assistant: string; creator: string };
@@ -122,6 +123,7 @@ export const COPY: Record<Language, AppCopy> = {
     theme: { dark: "Dark", light: "Light", switchToDark: "Switch to dark mode", switchToLight: "Switch to light mode" },
     labels: { vision: "AI", judge: "AI", newRun: "new run", ai: "AI", localFallback: "local fallback", visionAi: "AI vision" },
     phase: { uploading: "extracting video frames", extracting: "preparing frames", loop1: "loop 1 / selecting frames", loop2: "loop 2 / refining edits" },
+    progress: { heading: "Finding your best frames", steps: ["Extract", "Select", "Refine"], hint: "This can take a minute — keep this tab open." },
     banners: { vision: "AI" },
     pipeline: { loop2Title: "Edit refinement", loop2Note: "one bounded correction per round, lowest-scoring axis first / bar", loop2Tag: "LOOP 2" },
     footer: { assistant: "AI visual storytelling assistant", creator: "Creator & builder:" },
@@ -220,6 +222,7 @@ export const COPY: Record<Language, AppCopy> = {
     theme: { dark: "暗色", light: "亮色", switchToDark: "切換至暗色模式", switchToLight: "切換至亮色模式" },
     labels: { vision: "AI", judge: "AI", newRun: "重新開始", ai: "AI", localFallback: "本機備援", visionAi: "AI 視覺判斷" },
     phase: { uploading: "擷取影片影格", extracting: "準備影格", loop1: "迴圈一／選擇影格", loop2: "迴圈二／改善修圖" },
+    progress: { heading: "正在尋找最佳影格", steps: ["擷取", "選擇", "改善"], hint: "這可能需要一點時間，請保持此分頁開啟。" },
     banners: { vision: "AI" },
     pipeline: { loop2Title: "修圖改善", loop2Note: "每輪只做一項受控修正，優先處理最低分軸向／門檻", loop2Tag: "迴圈 2" },
     footer: { assistant: "AI 視覺敘事助理", creator: "創辦與製作：" },

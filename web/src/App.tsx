@@ -6,6 +6,7 @@ import { Loop1Panel } from "./components/Loop1Panel";
 import { Loop2Card } from "./components/Loop2Card";
 import { FinalGallery } from "./components/FinalGallery";
 import { InfraPanel } from "./components/InfraPanel";
+import { RunProgress } from "./components/RunProgress";
 import { Spinner } from "./components/bits";
 import { COPY, type AppCopy, type Language } from "./i18n";
 
@@ -95,6 +96,8 @@ export default function App() {
           )}
         </div>
       </header>
+
+      {busy && <RunProgress state={state} copy={text} />}
 
       {error && <div className="error-banner">{error}</div>}
       {state.config?.judgeNote && <div className="info-banner">{text.banners.vision}: {state.config.judgeNote}</div>}
